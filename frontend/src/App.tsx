@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactFlow, {
   addEdge,
   Background,
@@ -24,6 +24,7 @@ import {
   type WorkflowData,
   type WorkflowNodeType,
 } from './workflow/graphState'
+import { getAutomations, type AutomationAction } from './api/mockApi'
 
 const NODE_TYPES: WorkflowNodeType[] = [
   'start',
@@ -42,6 +43,9 @@ function CanvasWorkspace() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([])
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
+  const [automations, setAutomations] = useState<AutomationAction[]>([])
+  const [automationsLoading, setAutomationsLoading] = useState(true)
+  const [automationsError, setAutomationsError] = useState('')
 
   const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
@@ -52,6 +56,27 @@ function CanvasWorkspace() {
     if (!selectedNode) return null
     return validateTaskTitle(selectedNode.data)
   }, [selectedNode])
+
+  const selectedAutomation = useMemo(() => {
+    if (!selectedNode || selectedNode.data.nodeType !== 'automated') return null
+    return automations.find((item) => item.id === selectedNode.data.actionId) ?? null
+  }, [automations, selectedNode])
+
+  useEffect(() => {
+    async function loadAutomations() {
+      try {
+        const result = await getAutomations()
+        setAutomations(result)
+        setAutomationsError('')
+      } catch {
+        setAutomationsError('Could not load automation actions.')
+      } finally {
+        setAutomationsLoading(false)
+      }
+    }
+
+    loadAutomations()
+  }, [])
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -294,24 +319,47 @@ function CanvasWorkspace() {
               />
             </label>
             <label>
-              Action Id
-              <input
+              Action
+              <select
                 value={selectedNode.data.actionId ?? ''}
                 onChange={(event) => {
-                  patchSelectedNode({ actionId: event.target.value })
+                  const actionId = event.target.value
+                  const action = automations.find((item) => item.id === actionId)
+                  const actionParams = Object.fromEntries(
+                    (action?.params ?? []).map((param) => [param, '']),
+                  )
+
+                  patchSelectedNode({ actionId, actionParams })
                 }}
-              />
+              >
+                <option value="">Select action</option>
+                {automations.map((action) => (
+                  <option key={action.id} value={action.id}>
+                    {action.label}
+                  </option>
+                ))}
+              </select>
             </label>
-            <label>
-              Param value
-              <input
-                value={selectedNode.data.actionParams?.value ?? ''}
-                onChange={(event) => {
-                  const value = event.target.value
-                  patchSelectedNode({ actionParams: { ...(selectedNode.data.actionParams ?? {}), value } })
-                }}
-              />
-            </label>
+            {automationsLoading && <p className="panel-hint">Loading actions...</p>}
+            {!automationsLoading && automationsError && (
+              <p className="validation-error">{automationsError}</p>
+            )}
+            {selectedAutomation?.params.map((param) => (
+              <label key={param}>
+                {param}
+                <input
+                  value={selectedNode.data.actionParams?.[param] ?? ''}
+                  onChange={(event) => {
+                    patchSelectedNode({
+                      actionParams: {
+                        ...(selectedNode.data.actionParams ?? {}),
+                        [param]: event.target.value,
+                      },
+                    })
+                  }}
+                />
+              </label>
+            ))}
           </div>
         )}
 
@@ -360,7 +408,7 @@ function App() {
     <div className="app-shell">
       <header className="top-bar">
         <h1>HR Workflow Designer</h1>
-        <p>Increment 3: node form panel ready</p>
+        <p>Increment 4: local mock API layer ready</p>
       </header>
       <ReactFlowProvider>
         <CanvasWorkspace />

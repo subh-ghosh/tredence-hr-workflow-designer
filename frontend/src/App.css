@@ -122,10 +122,12 @@
 
 .form-grid input[type='text'],
 .form-grid input[type='number'],
+.form-grid select,
 .form-grid input:not([type]) {
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 8px 10px;
+  background: #ffffff;
 }
 
 .checkbox-row {

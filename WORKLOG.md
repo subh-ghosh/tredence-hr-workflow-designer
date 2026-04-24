@@ -94,11 +94,23 @@ Purpose: Track everything done during this case study build.
 	- Unit tests passed (11/11)
 	- Build passed
 
+#### 12. Increment 4 Implementation (Mock API Layer)
+- Added a simple local mock API service for:
+	- GET /automations
+	- POST /simulate
+- Added unit tests for automation fetch success/error and simulation success/error.
+- Wired the Automated node form to load actions from the mock API.
+- Replaced free-text action entry with a simple dropdown.
+- Added dynamic parameter inputs based on the selected automation action.
+- Updated the shell header to reflect Increment 4 status.
+- Verified gates:
+	- Unit tests passed (15/15)
+	- Build passed
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
 ## Next Planned Steps
-- Increment 4: add API layer and unit test service behavior.
 - Increment 5: add validation/sandbox and unit test validators.
 - Final phase: run integration tests, then system tests.
 
