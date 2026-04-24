@@ -9,8 +9,21 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 - Live demo: https://tredence-hr-workflow-designer-one.vercel.app/
 
 ## Preview
-![Workflow Builder Interface](assets/output%20images/frontend-1.png)
-![Complex Workflow Execution](assets/output%20images/Screenshot%20From%202026-04-24%2019-22-18.png)
+
+### 🖥️ Desktop — Light Mode
+![Light Mode](assets/output%20images/frontend-light.png)
+
+### 🌙 Desktop — Dark Mode
+![Dark Mode](assets/output%20images/frontend-dark.png)
+
+### 🔗 Workflow Graph
+![Workflow Graph](assets/output%20images/graph.png)
+
+### 📱 Mobile — Canvas Tab
+![Mobile Canvas](assets/output%20images/Screenshot_20260424_213835_Samsung%20Browser.png)
+
+### 📱 Mobile — Steps Tab
+![Mobile Steps](assets/output%20images/Screenshot_20260424_213844_Samsung%20Browser.png)
 
 ## Stack
 - React + TypeScript + Vite
