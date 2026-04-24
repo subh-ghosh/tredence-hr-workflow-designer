@@ -1,9 +1,9 @@
-# Work Log - HR Workflow Designer
+# Work Log — Tredence Analytics HR Workflow Designer
 
 Purpose: Track everything done during this case study build.
 
 ## Project
-- Name: HR Workflow Designer Case Study
+- Name: Tredence Analytics HR Workflow Designer
 - Repo: tredence-hr-workflow-designer
 - Started: 2026-04-24
 

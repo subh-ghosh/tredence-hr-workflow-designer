@@ -7,7 +7,7 @@ Live demo:
 - https://tredence-hr-workflow-designer-one.vercel.app/
 
 What I built:
-- A React + TypeScript + React Flow HR Workflow Designer prototype
+- A React + TypeScript + React Flow **Tredence Analytics HR Workflow Designer** prototype
 - Supports Start, Task, Approval, Automated, and End steps
 - Includes step editing forms, local mock API integration, validation, and a workflow test panel
 - Built incrementally with unit tests after each major step, followed by integration and final system verification

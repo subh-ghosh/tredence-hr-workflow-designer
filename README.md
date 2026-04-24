@@ -1,4 +1,4 @@
-# HR Workflow Designer Case Study
+# Tredence Analytics HR Workflow Designer — Case Study
 
 This project is a small workflow builder for HR teams.
 

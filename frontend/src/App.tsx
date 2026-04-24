@@ -1444,7 +1444,7 @@ function App() {
               {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
             </button>
           </div>
-          <h1>HR Workflow Designer</h1>
+          <h1>Tredence Analytics<br /><span style={{ fontSize: '0.75em', opacity: 0.85 }}>HR Workflow Designer</span></h1>
           <p>
             Create, explain, and test people-process workflows with a guided visual editor.
             This interface is designed to be easy for first-time users, not just for the case study.
