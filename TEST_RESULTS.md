@@ -22,7 +22,7 @@ Commands run:
 
 Results:
 - Unit tests: 2 passed, 0 failed
-- Build: not yet recorded in this entry
+- Build: covered in later full verification passes
 
 Defects found:
 - Initial duplicate heading query due to missing cleanup between tests

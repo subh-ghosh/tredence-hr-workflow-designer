@@ -152,7 +152,7 @@ Purpose: Track everything done during this case study build.
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
 ## Next Planned Steps
-- Submit the repo and share the supporting note/resume links.
+- Repository is ready for submission.
 
 ## How To Use This Log
 - Add one entry per meaningful change.

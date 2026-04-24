@@ -124,5 +124,5 @@ Done when:
 - Run simulation on valid graph
 - Trigger validation error on invalid graph
 
-## Next step
-Start M1 now.
+## Status
+Implementation and final verification are complete.
