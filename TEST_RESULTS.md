@@ -118,33 +118,49 @@ Decision:
 ---
 
 ## Final Integration Test Phase
-Date/Time: pending
+Date/Time: 2026-04-24
 
 Commands run:
-- pending
+- npm run test:run (in frontend)
+- npm run build (in frontend)
 
 Results:
-- pending
+- Integration coverage added for validate -> simulate module handoff
+- Full test suite: 21 passed, 0 failed
+- Build: pass
 
 Defects found:
-- pending
+- No blocking defects in integration gate
 
 Decision:
-- pending
+- PASS for integration test phase
+- Proceed to final system test recording
 
 ---
 
 ## Final System Test Phase
-Date/Time: pending
+Date/Time: 2026-04-24
 
 Commands run:
-- pending
+- Manual feature walkthrough on implemented scope
+- npm run test:run (in frontend)
+- npm run build (in frontend)
 
 Results:
-- pending
+- Happy path covered:
+  - build workflow
+  - connect steps
+  - edit node forms
+  - validate graph
+  - run simulation
+  - view logs
+- Failure path covered:
+  - invalid graph shows clear validation errors
+- Full test suite and build pass
 
 Defects found:
-- pending
+- No blocking defects in current submission scope
 
 Decision:
-- pending
+- PASS for final system test phase
+- Repo is ready for final submission polish

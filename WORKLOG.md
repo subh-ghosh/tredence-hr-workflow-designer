@@ -124,11 +124,22 @@ Purpose: Track everything done during this case study build.
 	- Unit tests passed (19/19)
 	- Build passed
 
+#### 14. Final Integration and System Test Phase
+- Added a simple integration test for validate -> simulate workflow handoff.
+- Re-ran the full frontend test suite and production build.
+- Recorded final integration and system test evidence in TEST_RESULTS.md.
+- Expanded README so the repo clearly explains:
+	- architecture
+	- run steps
+	- design choices
+	- current scope
+	- future improvements
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
 ## Next Planned Steps
-- Final phase: run integration tests, then system tests.
+- Final submission review and any last small polish items.
 
 ## How To Use This Log
 - Add one entry per meaningful change.
