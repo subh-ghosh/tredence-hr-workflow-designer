@@ -168,6 +168,14 @@ Purpose: Track everything done during this case study build.
 	- production build
 	- lint
 
+#### 18. Light/Dark Mode Toggle
+- Added a `🌙 Dark Mode` / `☀️ Light Mode` button in the hero header.
+- Implemented `isDarkMode` React state in the `App` component, toggling `body.dark` class on mount/unmount.
+- Propagated `isDarkMode` prop into `CanvasWorkspace` so React Flow edge colors and markers switch dynamically.
+- Preserved the original light theme as the default; all dark theme rules appended as `body.dark` overrides in CSS.
+- Dark theme covers: app shell background, glass panels, node cards, canvas surface, minimap, zoom controls, form inputs, toolbar buttons, import/export buttons, validation errors, and simulation logs.
+- Fixed color science to be consistent across themes with matching semantic colors (green=start, blue=task, amber=approval, purple=automated, rose=end).
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 

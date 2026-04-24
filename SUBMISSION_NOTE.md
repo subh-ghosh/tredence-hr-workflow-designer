@@ -13,6 +13,7 @@ What I built:
 - Built incrementally with unit tests after each major step, followed by integration and final system verification
 - Includes bonus features: Export/Import JSON, node templates, Undo/Redo, auto-layout, visual node validation, and lightweight node version history
 - Includes a modernized guided UI with custom workflow cards and clearer onboarding for first-time users
+- Includes a full Light/Dark mode toggle with seamless theme switching across all panels, canvas, nodes, and inputs
 
 Architecture highlights:
 - Canvas and main UI in `frontend/src/App.tsx`

@@ -46,6 +46,7 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 - Show validation errors directly on affected nodes
 - Save lightweight per-node version history entries
 - Use custom workflow card nodes with clearer visual types and friendlier onboarding copy
+- Toggle between a polished Light Mode and a high-contrast Dark Mode via a button in the header
 
 ## Workflow validation
 - Exactly one Start node is required
@@ -120,6 +121,7 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
   - Workflow validation errors shown on nodes
   - Auto-layout
   - Node version history
+  - Light/Dark mode toggle with synchronized edge, node, and panel theming
 - Next with more time:
   - stronger end-to-end browser automation
   - deeper responsive polish for very dense workflows

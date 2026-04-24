@@ -24,3 +24,8 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* --- DARK THEME FALLBACK --- */
+body.dark {
+  background: #0b0f19;
+}

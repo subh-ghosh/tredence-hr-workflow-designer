@@ -735,3 +735,257 @@
     height: 520px;
   }
 }
+
+body.dark .workflow-handle {
+  border-color: #111827;
+  background: #60a5fa;
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
+}
+
+body.dark .react-flow__edge-path {
+  stroke: #60a5fa;
+}
+
+/* ==============================================================
+   DARK MODE OVERRIDES (Only active when body has .dark)
+   ============================================================== */
+
+body.dark .app-shell {
+  color: #e2e8f0;
+  background:
+    radial-gradient(circle at top left, rgba(252, 185, 122, 0.05), transparent 28%),
+    radial-gradient(circle at 85% 0%, rgba(70, 148, 225, 0.05), transparent 24%),
+    linear-gradient(180deg, #0b0f19 0%, #111827 50%, #0d1117 100%);
+}
+
+body.dark .hero-copy,
+body.dark .panel {
+  background: rgba(14, 21, 35, 0.86);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.5);
+  color: #f1f5f9;
+}
+
+body.dark .hero-kicker,
+body.dark .eyebrow {
+  color: #ff9f76;
+}
+
+body.dark .top-bar h1,
+body.dark .panel h2,
+body.dark .section-title,
+body.dark .info-emphasis {
+  color: #ffffff;
+}
+
+body.dark .top-bar p,
+body.dark .panel-hint,
+body.dark .panel-status {
+  color: #94a3b8;
+}
+
+body.dark .hero-card {
+  background: linear-gradient(145deg, rgba(8, 18, 34, 0.96), rgba(18, 38, 64, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.dark .hero-steps span,
+body.dark .panel-badge {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+}
+
+body.dark .node-chip {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.5));
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
+body.dark .node-chip:hover {
+  background: linear-gradient(180deg, rgba(40, 51, 70, 0.5), rgba(25, 33, 52, 0.5));
+  border-color: rgba(38, 91, 156, 0.6);
+}
+
+body.dark .node-chip-title {
+  color: #f8fafc;
+}
+
+body.dark .node-chip-copy {
+  color: #94a3b8;
+}
+
+body.dark .canvas-tip,
+body.dark .empty-state-card,
+body.dark .info-card {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+}
+
+body.dark .secondary-button,
+body.dark .canvas-toolbar button,
+body.dark .sandbox-header button {
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+}
+
+body.dark .secondary-button:hover,
+body.dark .canvas-toolbar button:hover,
+body.dark .sandbox-header button:hover {
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
+body.dark .canvas-surface {
+  background: #0d1117;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark .react-flow__background path {
+  stroke: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dark .react-flow__controls,
+body.dark .react-flow__minimap {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark .react-flow__controls button {
+  background: transparent;
+  color: #f1f5f9;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark .react-flow__controls button svg {
+  fill: #cbd5e1;
+}
+
+/* Nodes */
+body.dark .workflow-card {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.5);
+}
+
+body.dark .workflow-card-title {
+  color: #f1f5f9;
+}
+
+body.dark .workflow-card-helper {
+  color: #94a3b8;
+}
+
+body.dark .workflow-card-start { background: linear-gradient(180deg, #022c22, #041f17); border-color: rgba(16, 185, 129, 0.3); }
+body.dark .workflow-card-start .workflow-card-kicker { color: #34d399; }
+
+body.dark .workflow-card-task { background: linear-gradient(180deg, #1e3a8a, #172554); border-color: rgba(59, 130, 246, 0.3); }
+body.dark .workflow-card-task .workflow-card-kicker { color: #60a5fa; }
+
+body.dark .workflow-card-approval { background: linear-gradient(180deg, #451a03, #2b1002); border-color: rgba(245, 158, 11, 0.3); }
+body.dark .workflow-card-approval .workflow-card-kicker { color: #fbbf24; }
+
+body.dark .workflow-card-automated { background: linear-gradient(180deg, #2e1065, #1b093b); border-color: rgba(168, 85, 247, 0.3); }
+body.dark .workflow-card-automated .workflow-card-kicker { color: #c084fc; }
+
+body.dark .workflow-card-end { background: linear-gradient(180deg, #4c0519, #2b030e); border-color: rgba(244, 63, 94, 0.3); }
+body.dark .workflow-card-end .workflow-card-kicker { color: #fb7185; }
+
+body.dark .workflow-node-has-error .workflow-card {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2), 0 18px 34px rgba(0, 0, 0, 0.5);
+}
+
+body.dark .workflow-node-is-muted .workflow-card {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark .form-grid label {
+  color: #cbd5e1;
+}
+
+body.dark .pair-row {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark .form-grid input,
+body.dark .form-grid select,
+body.dark .json-box {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+}
+
+body.dark .form-grid input:focus,
+body.dark .form-grid select:focus,
+body.dark .json-box:focus {
+  border-color: #3b82f6;
+}
+
+body.dark .validation-error,
+body.dark .error-list {
+  color: #fca5a5;
+}
+
+body.dark .history-list span,
+body.dark .history-list small {
+  color: #94a3b8;
+}
+
+body.dark .history-panel,
+body.dark .sandbox-panel,
+body.dark .import-export-panel {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark .import-export-panel button,
+body.dark .panel[aria-label='Node details panel'] button:not(.secondary-button) {
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+body.dark .import-export-panel button:hover,
+body.dark .panel[aria-label='Node details panel'] button:not(.secondary-button):hover {
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
+body.dark .import-export-panel button:disabled,
+body.dark .panel[aria-label='Node details panel'] button:disabled {
+  opacity: 0.4;
+}
+
+body.dark .workflow-has-selection .react-flow__pane {
+  background:
+    radial-gradient(circle at top, rgba(99, 102, 241, 0.05), transparent 36%),
+    linear-gradient(180deg, #0d1117, #080a0f);
+}
+
+body.dark .workflow-has-selection .react-flow__background {
+  opacity: 0.8;
+}
+
+body.dark .workflow-has-selection .react-flow__controls {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 24px rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.92);
+}
+
+body.dark .workflow-has-selection .react-flow__controls button {
+  background: transparent;
+  color: #f1f5f9;
+}
+
+body.dark .workflow-has-selection .react-flow__minimap {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.86);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.5);
+}

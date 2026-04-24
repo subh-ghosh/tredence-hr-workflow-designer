@@ -176,6 +176,7 @@ function buildEdgeStyles(
   edges: Edge[],
   selectedNodeId: string | null,
   selectedEdgeId: string | null,
+  isDarkMode: boolean
 ): Edge[] {
   const hasSelection = Boolean(selectedNodeId || selectedEdgeId)
 
@@ -186,20 +187,24 @@ function buildEdgeStyles(
       : false
     const isHighlighted = isSelectedEdge || isConnectedToSelectedNode
 
+    const baseColor = isDarkMode ? '#60a5fa' : '#235b9c';
+    const highlightColor = isDarkMode ? '#93c5fd' : '#74a3ff';
+    const mutedColor = isDarkMode ? '#475569' : '#334155';
+
     if (!hasSelection) {
       return {
         ...edge,
         animated: true,
         style: {
           ...edge.style,
-          stroke: '#235b9c',
+          stroke: baseColor,
           strokeWidth: 2.2,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 18,
           height: 18,
-          color: '#235b9c',
+          color: baseColor,
         },
       }
     }
@@ -209,7 +214,7 @@ function buildEdgeStyles(
       animated: isHighlighted,
       style: {
         ...edge.style,
-        stroke: isHighlighted ? '#74a3ff' : '#334155',
+        stroke: isHighlighted ? highlightColor : mutedColor,
         strokeWidth: isHighlighted ? 3.5 : 2.2,
         opacity: isHighlighted ? 1 : 0.58,
       },
@@ -217,7 +222,7 @@ function buildEdgeStyles(
         type: MarkerType.ArrowClosed,
         width: 18,
         height: 18,
-        color: isHighlighted ? '#74a3ff' : '#334155',
+        color: isHighlighted ? highlightColor : mutedColor,
       },
     }
   })
@@ -246,7 +251,7 @@ function getSupportedEdgeChanges(changes: EdgeChange[]): EdgeChange[] {
   )
 }
 
-function CanvasWorkspace() {
+function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const nodeCounter = useRef(0)
   const latestGraphRef = useRef<GraphSnapshot>({ nodes: [], edges: [], nodeVersions: {} })
@@ -292,8 +297,8 @@ function CanvasWorkspace() {
   )
 
   const displayEdges = useMemo(
-    () => buildEdgeStyles(edges, selectedNodeId, selectedEdgeId),
-    [edges, selectedEdgeId, selectedNodeId],
+    () => buildEdgeStyles(edges, selectedNodeId, selectedEdgeId, isDarkMode),
+    [edges, selectedEdgeId, selectedNodeId, isDarkMode], // added isDarkMode
   )
 
   const selectedAutomation = useMemo(() => {
@@ -1145,10 +1150,10 @@ function CanvasWorkspace() {
               Export your current workflow for backup or reuse, or paste valid workflow JSON to import it.
             </p>
             <div className="toolbar-actions">
-              <button type="button" onClick={exportWorkflowJson} disabled={nodes.length === 0}>
+              <button type="button" className="secondary-button" onClick={exportWorkflowJson} disabled={nodes.length === 0}>
                 Export JSON
               </button>
-              <button type="button" onClick={importWorkflowJson} disabled={!importExportText.trim()}>
+              <button type="button" className="secondary-button" onClick={importWorkflowJson} disabled={!importExportText.trim()}>
                 Import JSON
               </button>
             </div>
@@ -1167,11 +1172,31 @@ function CanvasWorkspace() {
 }
 
 function App() {
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark')
+    } else {
+      document.body.classList.remove('dark')
+    }
+  }, [isDarkMode])
+
   return (
     <div className="app-shell">
       <header className="top-bar">
         <div className="hero-copy">
-          <span className="hero-kicker">Visual workflow builder</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <span className="hero-kicker">Visual workflow builder</span>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              style={{ padding: '6px 12px', fontSize: '0.8rem', marginTop: '-4px' }}
+            >
+              {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+            </button>
+          </div>
           <h1>HR Workflow Designer</h1>
           <p>
             Create, explain, and test people-process workflows with a guided visual editor.
@@ -1194,7 +1219,7 @@ function App() {
         </div>
       </header>
       <ReactFlowProvider>
-        <CanvasWorkspace />
+        <CanvasWorkspace isDarkMode={isDarkMode} />
       </ReactFlowProvider>
     </div>
   )
