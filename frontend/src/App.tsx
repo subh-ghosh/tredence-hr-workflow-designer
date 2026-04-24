@@ -153,6 +153,33 @@ function CanvasWorkspace() {
     [updateSelectedNode],
   )
 
+  const updateKeyValueField = useCallback(
+    (
+      fieldName: 'metadata' | 'customFields',
+      index: number,
+      key: 'key' | 'value',
+      value: string,
+    ) => {
+      updateSelectedNode((data) => {
+        const currentFields = [...(data[fieldName] ?? [])]
+        const currentItem = currentFields[index] ?? { key: '', value: '' }
+        currentFields[index] = { ...currentItem, [key]: value }
+        return { ...data, [fieldName]: currentFields }
+      })
+    },
+    [updateSelectedNode],
+  )
+
+  const addKeyValueField = useCallback(
+    (fieldName: 'metadata' | 'customFields') => {
+      updateSelectedNode((data) => ({
+        ...data,
+        [fieldName]: [...(data[fieldName] ?? []), { key: '', value: '' }],
+      }))
+    },
+    [updateSelectedNode],
+  )
+
   const runSimulation = useCallback(async () => {
     const errors = validateWorkflow(nodes, edges)
     setSimulationErrors(errors)
@@ -177,8 +204,8 @@ function CanvasWorkspace() {
   return (
     <div className="panels">
       <aside className="panel" data-testid="panel-sidebar" aria-label="Node palette">
-        <h2>Node Palette</h2>
-        <p className="panel-hint">Drag a node into the canvas.</p>
+        <h2>Steps</h2>
+        <p className="panel-hint">Drag a step into the canvas.</p>
         <ul className="node-list">
           {NODE_TYPES.map((nodeType) => (
             <li key={nodeType}>
@@ -192,9 +219,9 @@ function CanvasWorkspace() {
 
       <main className="panel panel-canvas" data-testid="panel-canvas" aria-label="Workflow canvas area">
         <div className="canvas-toolbar">
-          <h2>Canvas Area</h2>
+          <h2>Workflow</h2>
           <button type="button" onClick={deleteSelection} disabled={!selectedNodeId && !selectedEdgeId}>
-            Delete Selection
+            Delete
           </button>
         </div>
 
@@ -206,6 +233,18 @@ function CanvasWorkspace() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onInit={setReactFlowInstance}
+            onNodeClick={(_, node) => {
+              setSelectedNodeId(node.id)
+              setSelectedEdgeId(null)
+            }}
+            onEdgeClick={(_, edge) => {
+              setSelectedEdgeId(edge.id)
+              setSelectedNodeId(null)
+            }}
+            onPaneClick={() => {
+              setSelectedNodeId(null)
+              setSelectedEdgeId(null)
+            }}
             onSelectionChange={({ nodes: selectedNodes, edges: selectedEdges }) => {
               setSelectedNodeId(selectedNodes[0]?.id ?? null)
               setSelectedEdgeId(selectedEdges[0]?.id ?? null)
@@ -220,17 +259,17 @@ function CanvasWorkspace() {
       </main>
 
       <aside className="panel" data-testid="panel-details" aria-label="Node details panel">
-        <h2>Node Form Panel</h2>
+        <h2>Details</h2>
         <p>{panelTitle}</p>
 
         {!selectedNode && (
-          <p className="panel-hint">Select a node to edit its fields.</p>
+          <p className="panel-hint">Click a step to edit it.</p>
         )}
 
         {selectedNode && selectedNode.data.nodeType === 'start' && (
           <div className="form-grid" data-testid="form-start">
             <label>
-              Start title
+              Name
               <input
                 value={selectedNode.data.startTitle ?? ''}
                 onChange={(event) => {
@@ -238,35 +277,42 @@ function CanvasWorkspace() {
                 }}
               />
             </label>
-            <label>
-              Metadata key
-              <input
-                value={selectedNode.data.metadata?.[0]?.key ?? ''}
-                onChange={(event) => {
-                  const nextKey = event.target.value
-                  const first = selectedNode.data.metadata?.[0] ?? { key: '', value: '' }
-                  patchSelectedNode({ metadata: [{ ...first, key: nextKey }] })
-                }}
-              />
-            </label>
-            <label>
-              Metadata value
-              <input
-                value={selectedNode.data.metadata?.[0]?.value ?? ''}
-                onChange={(event) => {
-                  const nextValue = event.target.value
-                  const first = selectedNode.data.metadata?.[0] ?? { key: '', value: '' }
-                  patchSelectedNode({ metadata: [{ ...first, value: nextValue }] })
-                }}
-              />
-            </label>
+            {(selectedNode.data.metadata ?? []).map((field, index) => (
+              <div key={`metadata-${index}`} className="pair-row">
+                <label>
+                  Extra field name
+                  <input
+                    value={field.key}
+                    onChange={(event) => {
+                      updateKeyValueField('metadata', index, 'key', event.target.value)
+                    }}
+                  />
+                </label>
+                <label>
+                  Extra field value
+                  <input
+                    value={field.value}
+                    onChange={(event) => {
+                      updateKeyValueField('metadata', index, 'value', event.target.value)
+                    }}
+                  />
+                </label>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => addKeyValueField('metadata')}
+            >
+              Add extra field
+            </button>
           </div>
         )}
 
         {selectedNode && selectedNode.data.nodeType === 'task' && (
           <div className="form-grid" data-testid="form-task">
             <label>
-              Title (required)
+              Name
               <input
                 value={selectedNode.data.title ?? ''}
                 onChange={(event) => {
@@ -275,7 +321,7 @@ function CanvasWorkspace() {
               />
             </label>
             <label>
-              Description
+              Notes
               <input
                 value={selectedNode.data.description ?? ''}
                 onChange={(event) => {
@@ -284,7 +330,7 @@ function CanvasWorkspace() {
               />
             </label>
             <label>
-              Assignee
+              Owner
               <input
                 value={selectedNode.data.assignee ?? ''}
                 onChange={(event) => {
@@ -301,13 +347,42 @@ function CanvasWorkspace() {
                 }}
               />
             </label>
+            {(selectedNode.data.customFields ?? []).map((field, index) => (
+              <div key={`custom-${index}`} className="pair-row">
+                <label>
+                  Extra field name
+                  <input
+                    value={field.key}
+                    onChange={(event) => {
+                      updateKeyValueField('customFields', index, 'key', event.target.value)
+                    }}
+                  />
+                </label>
+                <label>
+                  Extra field value
+                  <input
+                    value={field.value}
+                    onChange={(event) => {
+                      updateKeyValueField('customFields', index, 'value', event.target.value)
+                    }}
+                  />
+                </label>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => addKeyValueField('customFields')}
+            >
+              Add extra field
+            </button>
           </div>
         )}
 
         {selectedNode && selectedNode.data.nodeType === 'approval' && (
           <div className="form-grid" data-testid="form-approval">
             <label>
-              Title
+              Name
               <input
                 value={selectedNode.data.title ?? ''}
                 onChange={(event) => {
@@ -316,7 +391,7 @@ function CanvasWorkspace() {
               />
             </label>
             <label>
-              Approver role
+              Approver
               <input
                 value={selectedNode.data.approverRole ?? ''}
                 onChange={(event) => {
@@ -325,7 +400,7 @@ function CanvasWorkspace() {
               />
             </label>
             <label>
-              Auto-approve threshold
+              Auto-approve limit
               <input
                 type="number"
                 value={selectedNode.data.autoApproveThreshold ?? 0}
@@ -340,7 +415,7 @@ function CanvasWorkspace() {
         {selectedNode && selectedNode.data.nodeType === 'automated' && (
           <div className="form-grid" data-testid="form-automated">
             <label>
-              Title
+              Name
               <input
                 value={selectedNode.data.title ?? ''}
                 onChange={(event) => {
@@ -362,7 +437,7 @@ function CanvasWorkspace() {
                   patchSelectedNode({ actionId, actionParams })
                 }}
               >
-                <option value="">Select action</option>
+                <option value="">Choose action</option>
                 {automations.map((action) => (
                   <option key={action.id} value={action.id}>
                     {action.label}
@@ -372,7 +447,7 @@ function CanvasWorkspace() {
             </label>
             {automationsLoading && <p className="panel-hint">Loading actions...</p>}
             {!automationsLoading && automationsError && (
-              <p className="validation-error">{automationsError}</p>
+              <p className="validation-error">Could not load actions.</p>
             )}
             {selectedAutomation?.params.map((param) => (
               <label key={param}>
@@ -412,7 +487,7 @@ function CanvasWorkspace() {
                   patchSelectedNode({ summaryFlag: event.target.checked })
                 }}
               />
-              Summary flag
+              Show summary
             </label>
           </div>
         )}
@@ -425,19 +500,19 @@ function CanvasWorkspace() {
 
         {selectedNode && (
           <p className="panel-hint">
-            Label preview: {getNodeLabel(selectedNode.data)}
+            Step label: {getNodeLabel(selectedNode.data)}
           </p>
         )}
 
         <div className="sandbox-panel">
           <div className="sandbox-header">
-            <h3>Sandbox</h3>
+            <h3>Test</h3>
             <button type="button" onClick={runSimulation} disabled={simulationLoading}>
-              {simulationLoading ? 'Running...' : 'Run Simulation'}
+              {simulationLoading ? 'Running...' : 'Run'}
             </button>
           </div>
 
-          <p className="panel-hint">Validate the graph and run the mock workflow.</p>
+          <p className="panel-hint">Check the flow and run a test.</p>
 
           {simulationErrors.length > 0 && (
             <ul className="error-list" data-testid="simulation-errors">
@@ -467,7 +542,7 @@ function App() {
     <div className="app-shell">
       <header className="top-bar">
         <h1>HR Workflow Designer</h1>
-        <p>Increment 5: validation and sandbox ready</p>
+        <p>Build and test a simple HR workflow.</p>
       </header>
       <ReactFlowProvider>
         <CanvasWorkspace />

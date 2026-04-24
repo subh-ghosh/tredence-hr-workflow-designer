@@ -21,8 +21,8 @@ describe('workflow validation', () => {
 
     const errors = validateWorkflow(nodes, edges)
 
-    expect(errors).toContain('node_2 is missing an outgoing connection.')
-    expect(errors).toContain('node_3 is missing an incoming connection.')
+    expect(errors).toContain('Task is missing a next step.')
+    expect(errors).toContain('End is not connected from a previous step.')
   })
 
   it('detects cycles', () => {

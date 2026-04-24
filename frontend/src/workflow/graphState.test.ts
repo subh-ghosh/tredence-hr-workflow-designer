@@ -120,7 +120,7 @@ describe('graph state helpers', () => {
         const task = getDefaultNodeData('task')
         const start = getDefaultNodeData('start')
 
-        expect(getNodeLabel(task)).toBe('Task step')
-        expect(getNodeLabel(start)).toBe('Start workflow')
+        expect(getNodeLabel(task)).toBe('Task')
+        expect(getNodeLabel(start)).toBe('Start')
     })
 })

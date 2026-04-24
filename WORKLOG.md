@@ -135,11 +135,23 @@ Purpose: Track everything done during this case study build.
 	- current scope
 	- future improvements
 
+#### 15. Final Bug-Fix and Submission Pass
+- Fixed direct node/edge selection behavior for easier browser testing.
+- Fixed node labels so steps are visible on the canvas.
+- Changed the mock simulation to follow the connected path from Start instead of raw creation order.
+- Improved validation messages to show readable step names instead of internal ids.
+- Added repeatable extra field inputs for Start and Task steps.
+- Re-ran:
+	- unit/integration tests
+	- production build
+	- lint
+- Updated README with assumptions and a clearer completed-vs-next section for submission.
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
 ## Next Planned Steps
-- Final submission review and any last small polish items.
+- Submit the repo and share the supporting note/resume links.
 
 ## How To Use This Log
 - Add one entry per meaningful change.

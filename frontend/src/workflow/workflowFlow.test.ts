@@ -26,8 +26,8 @@ describe('workflow integration flow', () => {
     const result = await simulateWorkflow({ nodes, edges })
 
     expect(result.steps).toHaveLength(5)
-    expect(result.steps[0].message).toBe('Step 1: start')
-    expect(result.steps[4].message).toBe('Step 5: end')
+    expect(result.steps[0].message).toBe('Step 1: Start')
+    expect(result.steps[4].message).toBe('Step 5: End')
   })
 
   it('stops at validation for an invalid workflow', async () => {

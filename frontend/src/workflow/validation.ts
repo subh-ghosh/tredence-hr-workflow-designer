@@ -1,5 +1,5 @@
 import type { Edge, Node } from 'reactflow'
-import type { WorkflowData } from './graphState'
+import { getNodeLabel, type WorkflowData } from './graphState'
 
 export function validateWorkflow(
   nodes: Node<WorkflowData>[],
@@ -38,11 +38,11 @@ export function validateWorkflow(
     }
 
     if (node.data.nodeType !== 'end' && counts.outgoing === 0) {
-      errors.push(`${node.id} is missing an outgoing connection.`)
+      errors.push(`${getNodeLabel(node.data)} is missing a next step.`)
     }
 
     if (node.data.nodeType !== 'start' && counts.incoming === 0) {
-      errors.push(`${node.id} is missing an incoming connection.`)
+      errors.push(`${getNodeLabel(node.data)} is not connected from a previous step.`)
     }
   }
 

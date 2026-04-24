@@ -20,8 +20,8 @@ describe('mock API', () => {
   it('returns step logs for simulation', async () => {
     const workflow = {
       nodes: [
-        addWorkflowNode('node_1', { x: 0, y: 0 }, getDefaultNodeData('start')),
         addWorkflowNode('node_2', { x: 100, y: 0 }, getDefaultNodeData('task')),
+        addWorkflowNode('node_1', { x: 0, y: 0 }, getDefaultNodeData('start')),
       ],
       edges: [{ id: 'e1', source: 'node_1', target: 'node_2' }],
     }
@@ -29,8 +29,8 @@ describe('mock API', () => {
     const result = await simulateWorkflow(workflow)
 
     expect(result.steps).toHaveLength(2)
-    expect(result.steps[0].message).toBe('Step 1: start')
-    expect(result.steps[1].message).toBe('Step 2: task')
+    expect(result.steps[0].message).toBe('Step 1: Start')
+    expect(result.steps[1].message).toBe('Step 2: Task')
   })
 
   it('returns simulation error when requested', async () => {

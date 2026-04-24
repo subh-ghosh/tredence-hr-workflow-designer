@@ -9,6 +9,7 @@ export type KeyValueField = {
 
 export type WorkflowData = {
     nodeType: WorkflowNodeType
+    label?: string
     startTitle?: string
     metadata?: KeyValueField[]
     title?: string
@@ -32,7 +33,7 @@ export function getDefaultNodeData(type: WorkflowNodeType): WorkflowData {
     if (type === 'start') {
         return {
             nodeType: type,
-            startTitle: 'Start workflow',
+            startTitle: 'Start',
             metadata: [],
         }
     }
@@ -40,7 +41,7 @@ export function getDefaultNodeData(type: WorkflowNodeType): WorkflowData {
     if (type === 'task') {
         return {
             nodeType: type,
-            title: 'Task step',
+            title: 'Task',
             description: '',
             assignee: '',
             dueDate: '',
@@ -51,7 +52,7 @@ export function getDefaultNodeData(type: WorkflowNodeType): WorkflowData {
     if (type === 'approval') {
         return {
             nodeType: type,
-            title: 'Approval step',
+            title: 'Approval',
             approverRole: 'Manager',
             autoApproveThreshold: 0,
         }
@@ -60,7 +61,7 @@ export function getDefaultNodeData(type: WorkflowNodeType): WorkflowData {
     if (type === 'automated') {
         return {
             nodeType: type,
-            title: 'Automated step',
+            title: 'Automated',
             actionId: '',
             actionParams: {},
         }
@@ -68,7 +69,7 @@ export function getDefaultNodeData(type: WorkflowNodeType): WorkflowData {
 
     return {
         nodeType: type,
-        endMessage: 'Workflow complete',
+        endMessage: 'End',
         summaryFlag: false,
     }
 }
@@ -82,7 +83,10 @@ export function addWorkflowNode(
         id,
         type: 'default',
         position,
-        data,
+        data: {
+            ...data,
+            label: getNodeLabel(data),
+        },
     }
 }
 
@@ -113,7 +117,13 @@ export function updateWorkflowNode(
 
         return {
             ...node,
-            data: updater(node.data),
+            data: (() => {
+                const nextData = updater(node.data)
+                return {
+                    ...nextData,
+                    label: getNodeLabel(nextData),
+                }
+            })(),
         }
     })
 }
