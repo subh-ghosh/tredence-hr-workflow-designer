@@ -278,7 +278,8 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
 
   // Mobile state
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768)
-  const [activeTab, setActiveTab] = useState<'steps' | 'canvas' | 'details'>('canvas')
+  const [activeTab, setActiveTab] = useState<'steps' | 'canvas'>('canvas')
+  const [mobileEditOpen, setMobileEditOpen] = useState(false)
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768)
@@ -874,6 +875,7 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
             onNodeClick={(_, node) => {
               setSelectedNodeId(node.id)
               setSelectedEdgeId(null)
+              if (isMobile) setMobileEditOpen(false) // show Edit button, not modal immediately
             }}
             onEdgeClick={(_, edge) => {
               setSelectedEdgeId(edge.id)
@@ -894,7 +896,131 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
             <Background color="#c2d3e8" gap={28} size={1.35} />
           </ReactFlow>
         </div>
+
+        {/* Mobile floating Edit button when node selected */}
+        {isMobile && selectedNodeId && !mobileEditOpen && (
+          <div className="mobile-node-actions">
+            <button
+              type="button"
+              className="mobile-edit-btn"
+              onClick={() => setMobileEditOpen(true)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Edit step
+            </button>
+            <button
+              type="button"
+              className="mobile-deselect-btn"
+              onClick={() => { clearSelection(); setMobileEditOpen(false) }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Mobile sandbox & import-export moved here from right panel */}
+        {isMobile && (
+          <div className="mobile-canvas-bottom">
+            <div className="sandbox-panel">
+              <div className="sandbox-header">
+                <div>
+                  <h3>Test the workflow</h3>
+                  <p className="panel-hint">Run a quick check to validate the flow and preview the execution log.</p>
+                </div>
+                <button type="button" onClick={runSimulation} disabled={simulationLoading}>
+                  {simulationLoading ? 'Running...' : 'Run test'}
+                </button>
+              </div>
+              {simulationErrors.length > 0 && (
+                <ul className="error-list" data-testid="simulation-errors">
+                  {simulationErrors.map((error) => <li key={error}>{error}</li>)}
+                </ul>
+              )}
+              {simulationLogs.length > 0 && (
+                <ol className="log-list" data-testid="simulation-logs">
+                  {simulationLogs.map((log) => (
+                    <li key={log.stepId}><strong>{log.status}</strong>: {log.message}</li>
+                  ))}
+                </ol>
+              )}
+            </div>
+            <div className="import-export-panel">
+              <h3>Import or export workflow JSON</h3>
+              <p className="panel-hint">Export your current workflow for backup or reuse, or paste valid workflow JSON to import it.</p>
+              <div className="toolbar-actions">
+                <button type="button" className="secondary-button" onClick={exportWorkflowJson} disabled={nodes.length === 0}>Export JSON</button>
+                <button type="button" className="secondary-button" onClick={importWorkflowJson} disabled={!importExportText.trim()}>Import JSON</button>
+              </div>
+              <textarea
+                value={importExportText}
+                onChange={(event) => setImportExportText(event.target.value)}
+                className="json-box"
+                placeholder="Your workflow JSON will appear here. You can also paste JSON here and import it."
+              />
+              {importError && <p className="validation-error">{importError}</p>}
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* Mobile node edit modal */}
+      {isMobile && mobileEditOpen && selectedNode && (
+        <div className="mobile-modal-overlay" onClick={() => setMobileEditOpen(false)}>
+          <div className="mobile-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-modal-header">
+              <h3>Edit: {getNodeLabel(selectedNode.data)}</h3>
+              <button type="button" className="mobile-modal-close" onClick={() => setMobileEditOpen(false)}>✕</button>
+            </div>
+            <div className="mobile-modal-body">
+              {selectedNode.data.nodeType === 'start' && (
+                <div className="form-grid">
+                  <label>Name
+                    <input value={selectedNode.data.startTitle ?? ''} onChange={(e) => patchSelectedNode({ startTitle: e.target.value })} />
+                  </label>
+                </div>
+              )}
+              {selectedNode.data.nodeType === 'task' && (
+                <div className="form-grid">
+                  <label>Name<input value={selectedNode.data.title ?? ''} onChange={(e) => patchSelectedNode({ title: e.target.value })} /></label>
+                  <label>Notes<input value={selectedNode.data.description ?? ''} onChange={(e) => patchSelectedNode({ description: e.target.value })} /></label>
+                  <label>Owner<input value={selectedNode.data.assignee ?? ''} onChange={(e) => patchSelectedNode({ assignee: e.target.value })} /></label>
+                  <label>Due date<input value={selectedNode.data.dueDate ?? ''} onChange={(e) => patchSelectedNode({ dueDate: e.target.value })} /></label>
+                </div>
+              )}
+              {selectedNode.data.nodeType === 'approval' && (
+                <div className="form-grid">
+                  <label>Name<input value={selectedNode.data.title ?? ''} onChange={(e) => patchSelectedNode({ title: e.target.value })} /></label>
+                  <label>Approver role<input value={selectedNode.data.approverRole ?? ''} onChange={(e) => patchSelectedNode({ approverRole: e.target.value })} /></label>
+                  <label>Due
+                    <input value={selectedNode.data.dueDate ?? ''} onChange={(e) => patchSelectedNode({ dueDate: e.target.value })} />
+                  </label>
+                </div>
+              )}
+              {selectedNode.data.nodeType === 'automated' && (
+                <div className="form-grid">
+                  <label>Name<input value={selectedNode.data.title ?? ''} onChange={(e) => patchSelectedNode({ title: e.target.value })} /></label>
+                  <label>Notes<input value={selectedNode.data.description ?? ''} onChange={(e) => patchSelectedNode({ description: e.target.value })} /></label>
+                </div>
+              )}
+              {selectedNode.data.nodeType === 'end' && (
+                <div className="form-grid">
+                  <label>End message<input value={selectedNode.data.endMessage ?? ''} onChange={(e) => patchSelectedNode({ endMessage: e.target.value })} /></label>
+                </div>
+              )}
+              {validationMessage && <p className="validation-error">{validationMessage}</p>}
+              {validationPreview.nodeErrors[selectedNode.id]?.length ? (
+                <ul className="error-list compact-list">
+                  {validationPreview.nodeErrors[selectedNode.id].map((err) => <li key={err}>{err}</li>)}
+                </ul>
+              ) : null}
+              <button type="button" className="secondary-button" style={{ marginTop: 16 }} onClick={() => setMobileEditOpen(false)}>Done</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <aside className="panel" data-testid="panel-details" aria-label="Node details panel">
         <div className="panel-heading">
@@ -1189,60 +1315,52 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
           </div>
         )}
 
-        <div className="sandbox-panel">
-          <div className="sandbox-header">
-            <div>
-              <h3>Test the workflow</h3>
-              <p className="panel-hint">Run a quick check to validate the flow and preview the execution log.</p>
-            </div>
-            <button type="button" onClick={runSimulation} disabled={simulationLoading}>
-              {simulationLoading ? 'Running...' : 'Run test'}
-            </button>
-          </div>
-
-          {simulationErrors.length > 0 && (
-            <ul className="error-list" data-testid="simulation-errors">
-              {simulationErrors.map((error) => (
-                <li key={error}>{error}</li>
-              ))}
-            </ul>
-          )}
-
-          {simulationLogs.length > 0 && (
-            <ol className="log-list" data-testid="simulation-logs">
-              {simulationLogs.map((log) => (
-                <li key={log.stepId}>
-                  <strong>{log.status}</strong>: {log.message}
-                </li>
-              ))}
-            </ol>
-          )}
-
-          <div className="import-export-panel">
-            <h3>Import or export workflow JSON</h3>
-            <p className="panel-hint">
-              Export your current workflow for backup or reuse, or paste valid workflow JSON to import it.
-            </p>
-            <div className="toolbar-actions">
-              <button type="button" className="secondary-button" onClick={exportWorkflowJson} disabled={nodes.length === 0}>
-                Export JSON
-              </button>
-              <button type="button" className="secondary-button" onClick={importWorkflowJson} disabled={!importExportText.trim()}>
-                Import JSON
+        {/* On desktop only — sandbox and import/export stay in the right panel */}
+        {!isMobile && (
+          <div className="sandbox-panel">
+            <div className="sandbox-header">
+              <div>
+                <h3>Test the workflow</h3>
+                <p className="panel-hint">Run a quick check to validate the flow and preview the execution log.</p>
+              </div>
+              <button type="button" onClick={runSimulation} disabled={simulationLoading}>
+                {simulationLoading ? 'Running...' : 'Run test'}
               </button>
             </div>
-            <textarea
-              value={importExportText}
-              onChange={(event) => setImportExportText(event.target.value)}
-              className="json-box"
-              placeholder="Your workflow JSON will appear here. You can also paste JSON here and import it."
-            />
-            {importError && <p className="validation-error">{importError}</p>}
+            {simulationErrors.length > 0 && (
+              <ul className="error-list" data-testid="simulation-errors">
+                {simulationErrors.map((error) => <li key={error}>{error}</li>)}
+              </ul>
+            )}
+            {simulationLogs.length > 0 && (
+              <ol className="log-list" data-testid="simulation-logs">
+                {simulationLogs.map((log) => (
+                  <li key={log.stepId}><strong>{log.status}</strong>: {log.message}</li>
+                ))}
+              </ol>
+            )}
+            <div className="import-export-panel">
+              <h3>Import or export workflow JSON</h3>
+              <p className="panel-hint">
+                Export your current workflow for backup or reuse, or paste valid workflow JSON to import it.
+              </p>
+              <div className="toolbar-actions">
+                <button type="button" className="secondary-button" onClick={exportWorkflowJson} disabled={nodes.length === 0}>Export JSON</button>
+                <button type="button" className="secondary-button" onClick={importWorkflowJson} disabled={!importExportText.trim()}>Import JSON</button>
+              </div>
+              <textarea
+                value={importExportText}
+                onChange={(event) => setImportExportText(event.target.value)}
+                className="json-box"
+                placeholder="Your workflow JSON will appear here. You can also paste JSON here and import it."
+              />
+              {importError && <p className="validation-error">{importError}</p>}
+            </div>
           </div>
-        </div>
+        )}
       </aside>
 
-      {/* Mobile bottom tab bar */}
+      {/* Mobile bottom tab bar — 2 tabs only */}
       {isMobile && (
         <nav className="mobile-tab-bar" aria-label="Mobile navigation">
           <button
@@ -1268,17 +1386,6 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
               <path d="M7 12h5m2-5-5 4m5 2-5 4"/>
             </svg>
             <span className="mobile-tab-label">Canvas</span>
-          </button>
-          <button
-            type="button"
-            className={`mobile-tab-btn${activeTab === 'details' ? ' mobile-tab-active' : ''}`}
-            onClick={() => setActiveTab('details')}
-          >
-            <svg className="mobile-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3a9 9 0 100 18A9 9 0 0012 3z"/>
-              <path d="M12 8v4l3 3"/>
-            </svg>
-            <span className="mobile-tab-label">Details</span>
           </button>
         </nav>
       )}

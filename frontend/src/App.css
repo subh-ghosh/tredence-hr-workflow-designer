@@ -776,6 +776,169 @@
     margin-top: 12px;
   }
 
+  /* On mobile, canvas panel always shows (it's the default tab) */
+  .mobile-panels.mobile-tab-canvas main[aria-label='Workflow canvas area'] {
+    display: flex;
+  }
+
+  /* React Flow handles - bigger for easier touch connection */
+  .react-flow__handle {
+    width: 20px !important;
+    height: 20px !important;
+    border-width: 3px !important;
+  }
+
+  /* Taller canvas surface */
+  .canvas-surface,
+  .panel-canvas .canvas-surface {
+    flex: none;
+    height: 520px;
+  }
+
+  /* Smaller minimap */
+  .react-flow__minimap {
+    transform: scale(0.65);
+    transform-origin: bottom right;
+  }
+
+  /* Floating edit button bar */
+  .mobile-node-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 0 4px;
+  }
+
+  .mobile-edit-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #c2461a, #e8843a);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(194, 70, 26, 0.35);
+    transition: transform 150ms ease;
+  }
+
+  .mobile-edit-btn svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .mobile-edit-btn:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-deselect-btn {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.8);
+    color: #475569;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Canvas bottom test + import section */
+  .mobile-canvas-bottom {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 12px;
+  }
+
+  .mobile-canvas-bottom .sandbox-panel,
+  .mobile-canvas-bottom .import-export-panel {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    padding: 18px;
+  }
+
+  .mobile-canvas-bottom h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: #0f172a;
+  }
+
+  /* Modal overlay */
+  .mobile-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    z-index: 2000;
+    display: flex;
+    align-items: flex-end;
+    backdrop-filter: blur(4px);
+  }
+
+  .mobile-modal {
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 28px 28px 0 0;
+    padding: 0 0 32px;
+    animation: slide-up 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .mobile-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    z-index: 1;
+  }
+
+  .mobile-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .mobile-modal-close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.06);
+    color: #334155;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-modal-body {
+    padding: 20px;
+  }
+
   .panel-badge {
     display: none;
   }
@@ -931,6 +1094,40 @@ body.dark .mobile-tab-btn.mobile-tab-active {
 body.dark .tap-add-btn {
   background: linear-gradient(135deg, #c2461a, #e8843a);
   box-shadow: 0 6px 16px rgba(232, 132, 58, 0.35);
+}
+
+body.dark .mobile-deselect-btn {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+}
+
+body.dark .mobile-canvas-bottom .sandbox-panel,
+body.dark .mobile-canvas-bottom .import-export-panel {
+  background: rgba(14, 21, 35, 0.7);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+body.dark .mobile-canvas-bottom h3 {
+  color: #f8fafc;
+}
+
+body.dark .mobile-modal {
+  background: #0f172a;
+}
+
+body.dark .mobile-modal-header {
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark .mobile-modal-header h3 {
+  color: #f8fafc;
+}
+
+body.dark .mobile-modal-close {
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
 }
 
 body.dark .workflow-handle {
