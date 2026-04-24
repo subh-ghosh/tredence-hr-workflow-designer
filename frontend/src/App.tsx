@@ -276,6 +276,16 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
   const [importError, setImportError] = useState('')
   const nodeTypes = useMemo(() => ({ workflow: WorkflowCardNode }), [])
 
+  // Mobile state
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768)
+  const [activeTab, setActiveTab] = useState<'steps' | 'canvas' | 'details'>('canvas')
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
     [nodes, selectedNodeId],
@@ -678,8 +688,43 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
     commitGraph(layouted.nodes, layouted.edges)
   }, [commitGraph, edges, nodes])
 
+  // Mobile: add a node at center of canvas
+  const addNodeAtCenter = useCallback(
+    (type: WorkflowNodeType) => {
+      const nextId = createNodeId(++nodeCounter.current)
+      const current = latestGraphRef.current
+      const position = { x: 140 + Math.random() * 80, y: 120 + Math.random() * 80 }
+      const nextNode = addWorkflowNode(nextId, position, getDefaultNodeData(type))
+      setNodeVersions((currentVersions) => ({
+        ...currentVersions,
+        [nextId]: [createVersionEntry(nextNode.data, 'Created step')],
+      }))
+      commitGraph(current.nodes.concat(nextNode), current.edges)
+      if (isMobile) setActiveTab('canvas')
+    },
+    [commitGraph, isMobile],
+  )
+
+  const addTemplateAtCenter = useCallback(
+    (templateId: string) => {
+      const template = WORKFLOW_TEMPLATES.find((item) => item.id === templateId)
+      if (!template) return
+      const nextId = createNodeId(++nodeCounter.current)
+      const current = latestGraphRef.current
+      const position = { x: 140 + Math.random() * 80, y: 120 + Math.random() * 80 }
+      const nextNode = createTemplateNode(nextId, position, template)
+      setNodeVersions((currentVersions) => ({
+        ...currentVersions,
+        [nextId]: [createVersionEntry(nextNode.data, `Created from template: ${template.label}`)],
+      }))
+      commitGraph(current.nodes.concat(nextNode), current.edges)
+      if (isMobile) setActiveTab('canvas')
+    },
+    [commitGraph, isMobile],
+  )
+
   return (
-    <div className="panels">
+    <div className={`panels${isMobile ? ` mobile-panels mobile-tab-${activeTab}` : ''}`}>
       <aside className="panel" data-testid="panel-sidebar" aria-label="Node palette">
         <div className="panel-heading">
           <div>
@@ -695,16 +740,28 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
         <ul className="node-list">
           {NODE_TYPES.map((nodeType) => (
             <li key={nodeType}>
-              <button type="button" className="node-chip" draggable onDragStart={(event) => onDragStart(event, nodeType)}>
-                <span className="node-chip-title">{nodeType}</span>
-                <span className="node-chip-copy">
-                  {nodeType === 'start' && 'Where the workflow begins'}
-                  {nodeType === 'task' && 'A human task someone completes'}
-                  {nodeType === 'approval' && 'A decision or sign-off step'}
-                  {nodeType === 'automated' && 'A system action triggered automatically'}
-                  {nodeType === 'end' && 'How the workflow finishes'}
-                </span>
-              </button>
+              <div className="node-chip-row">
+                <button type="button" className="node-chip" draggable onDragStart={(event) => onDragStart(event, nodeType)}>
+                  <span className="node-chip-title">{nodeType}</span>
+                  <span className="node-chip-copy">
+                    {nodeType === 'start' && 'Where the workflow begins'}
+                    {nodeType === 'task' && 'A human task someone completes'}
+                    {nodeType === 'approval' && 'A decision or sign-off step'}
+                    {nodeType === 'automated' && 'A system action triggered automatically'}
+                    {nodeType === 'end' && 'How the workflow finishes'}
+                  </span>
+                </button>
+                {isMobile && (
+                  <button
+                    type="button"
+                    className="tap-add-btn"
+                    onClick={() => addNodeAtCenter(nodeType)}
+                    aria-label={`Add ${nodeType} step`}
+                  >
+                    +
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
@@ -715,15 +772,27 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
         <ul className="node-list">
           {WORKFLOW_TEMPLATES.map((template) => (
             <li key={template.id}>
-              <button
-                type="button"
-                className="node-chip"
-                draggable
-                onDragStart={(event) => onTemplateDragStart(event, template.id)}
-              >
-                <span className="node-chip-title">{template.label}</span>
-                <span className="node-chip-copy">Ready-made content you can edit later</span>
-              </button>
+              <div className="node-chip-row">
+                <button
+                  type="button"
+                  className="node-chip"
+                  draggable
+                  onDragStart={(event) => onTemplateDragStart(event, template.id)}
+                >
+                  <span className="node-chip-title">{template.label}</span>
+                  <span className="node-chip-copy">Ready-made content you can edit later</span>
+                </button>
+                {isMobile && (
+                  <button
+                    type="button"
+                    className="tap-add-btn"
+                    onClick={() => addTemplateAtCenter(template.id)}
+                    aria-label={`Use template ${template.label}`}
+                  >
+                    +
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
@@ -737,10 +806,15 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
           </div>
         </div>
         <div className="canvas-intro">
-          <div className="canvas-tip">
+          <div className="canvas-tip drag-hint">
             <strong>How to use it:</strong> drag steps from the left, connect them in order,
             then click any step to configure it.
           </div>
+          {isMobile && (
+            <div className="canvas-tip">
+              <strong>How to use it:</strong> go to <strong>Steps</strong> tab and tap <strong>+</strong> to add steps, then connect and tap to configure.
+            </div>
+          )}
           <div className="canvas-tip subtle">
             Tip: Use <strong>Auto-layout</strong> after adding a few steps to clean up the
             diagram.
@@ -1167,6 +1241,47 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
           </div>
         </div>
       </aside>
+
+      {/* Mobile bottom tab bar */}
+      {isMobile && (
+        <nav className="mobile-tab-bar" aria-label="Mobile navigation">
+          <button
+            type="button"
+            className={`mobile-tab-btn${activeTab === 'steps' ? ' mobile-tab-active' : ''}`}
+            onClick={() => setActiveTab('steps')}
+          >
+            <svg className="mobile-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <path d="M9 9h6M9 12h6M9 15h4"/>
+            </svg>
+            <span className="mobile-tab-label">Steps</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-tab-btn${activeTab === 'canvas' ? ' mobile-tab-active' : ''}`}
+            onClick={() => setActiveTab('canvas')}
+          >
+            <svg className="mobile-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="5" cy="12" r="2"/>
+              <circle cx="19" cy="5" r="2"/>
+              <circle cx="19" cy="19" r="2"/>
+              <path d="M7 12h5m2-5-5 4m5 2-5 4"/>
+            </svg>
+            <span className="mobile-tab-label">Canvas</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-tab-btn${activeTab === 'details' ? ' mobile-tab-active' : ''}`}
+            onClick={() => setActiveTab('details')}
+          >
+            <svg className="mobile-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3a9 9 0 100 18A9 9 0 0012 3z"/>
+              <path d="M12 8v4l3 3"/>
+            </svg>
+            <span className="mobile-tab-label">Details</span>
+          </button>
+        </nav>
+      )}
     </div>
   )
 }

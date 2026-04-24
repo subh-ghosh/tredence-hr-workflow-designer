@@ -14,6 +14,7 @@ What I built:
 - Includes bonus features: Export/Import JSON, node templates, Undo/Redo, auto-layout, visual node validation, and lightweight node version history
 - Includes a modernized guided UI with custom workflow cards and clearer onboarding for first-time users
 - Includes a full Light/Dark mode toggle with seamless theme switching across all panels, canvas, nodes, and inputs
+- Fully mobile-responsive: bottom tab bar navigation (Steps / Canvas / Details) and tap-to-add step buttons for touch screens
 
 Architecture highlights:
 - Canvas and main UI in `frontend/src/App.tsx`

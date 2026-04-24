@@ -47,6 +47,7 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 - Save lightweight per-node version history entries
 - Use custom workflow card nodes with clearer visual types and friendlier onboarding copy
 - Toggle between a polished Light Mode and a high-contrast Dark Mode via a button in the header
+- Fully responsive on mobile: tab navigation (Steps / Canvas / Details) with tap-to-add buttons
 
 ## Workflow validation
 - Exactly one Start node is required
@@ -122,6 +123,7 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
   - Auto-layout
   - Node version history
   - Light/Dark mode toggle with synchronized edge, node, and panel theming
+  - Mobile-responsive layout with bottom tab navigation and tap-to-add step buttons
 - Next with more time:
   - stronger end-to-end browser automation
   - deeper responsive polish for very dense workflows

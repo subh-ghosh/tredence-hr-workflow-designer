@@ -717,23 +717,220 @@
   }
 }
 
-@media (max-width: 720px) {
-  .top-bar,
-  .panels {
-    padding-left: 12px;
-    padding-right: 12px;
+/* =============================================
+   MOBILE RESPONSIVE (≤ 768px)
+   ============================================= */
+
+@media (max-width: 768px) {
+  /* Hero */
+  .top-bar {
+    grid-template-columns: 1fr;
+    padding: 16px 16px 8px;
+    gap: 12px;
   }
 
-  .hero-copy,
-  .hero-card,
-  .panel {
-    padding: 16px;
+  .hero-card {
+    display: none; /* Hide checklist card on mobile to save space */
+  }
+
+  .hero-copy {
+    padding: 20px;
     border-radius: 20px;
   }
 
-  .canvas-surface {
-    height: 520px;
+  .top-bar h1 {
+    font-size: 1.9rem;
   }
+
+  .hero-steps {
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .hero-steps span {
+    font-size: 0.78rem;
+    padding: 6px 12px;
+    min-height: 32px;
+  }
+
+  /* Panels: stack vertically, tab-based visibility */
+  .panels {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0 12px 80px; /* 80px = room for tab bar */
+    grid-auto-rows: auto;
+  }
+
+  .panel {
+    min-height: auto;
+    border-radius: 20px;
+    padding: 18px;
+    display: none; /* Hidden by default; only active tab shows */
+  }
+
+  /* Show active tab panel */
+  .mobile-panels.mobile-tab-steps aside[aria-label='Node palette'],
+  .mobile-panels.mobile-tab-canvas main[aria-label='Workflow canvas area'],
+  .mobile-panels.mobile-tab-details aside[aria-label='Node details panel'] {
+    display: flex;
+    margin-top: 12px;
+  }
+
+  .panel-badge {
+    display: none;
+  }
+
+  .canvas-tip.drag-hint {
+    display: none;
+  }
+
+  .canvas-surface {
+    height: 420px;
+  }
+
+  /* Override the higher-specificity 'flex:1' rule so canvas surfaces
+     have a real height on mobile */
+  .panel-canvas .canvas-surface {
+    flex: none;
+    height: 420px;
+  }
+
+  .canvas-intro {
+    gap: 8px;
+    margin: 10px 0 10px;
+  }
+
+  .canvas-tip {
+    font-size: 0.88rem;
+  }
+
+  /* Tap-to-add layout */
+  .node-chip-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .node-chip-row .node-chip {
+    flex: 1;
+  }
+
+  .tap-add-btn {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #c2461a, #e8843a);
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(194, 70, 26, 0.35);
+    transition: transform 150ms ease, box-shadow 150ms ease;
+  }
+
+  .tap-add-btn:active {
+    transform: scale(0.92);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+  }
+
+  /* Mobile Tab Bar */
+  .mobile-tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    display: flex;
+    align-items: stretch;
+    background: rgba(255, 255, 255, 0.92);
+    border-top: 1px solid rgba(226, 232, 240, 0.8);
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+    padding: 0 8px;
+    gap: 4px;
+  }
+
+  .mobile-tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 150ms ease;
+    padding: 8px 4px;
+  }
+
+  .mobile-tab-btn:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-tab-btn.mobile-tab-active {
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.08);
+  }
+
+  .mobile-tab-icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .mobile-tab-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  /* Toolbar buttons: make them bigger */
+  .secondary-button,
+  .canvas-toolbar button,
+  .sandbox-header button {
+    padding: 12px 14px;
+    font-size: 0.88rem;
+  }
+}
+
+/* Very small screens (<= 380px) */
+@media (max-width: 380px) {
+  .hero-steps {
+    display: none;
+  }
+
+  .top-bar h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Dark mode mobile tab bar */
+body.dark .mobile-tab-bar {
+  background: rgba(15, 23, 42, 0.92);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.dark .mobile-tab-btn {
+  color: #475569;
+}
+
+body.dark .mobile-tab-btn.mobile-tab-active {
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.1);
+}
+
+body.dark .tap-add-btn {
+  background: linear-gradient(135deg, #c2461a, #e8843a);
+  box-shadow: 0 6px 16px rgba(232, 132, 58, 0.35);
 }
 
 body.dark .workflow-handle {
