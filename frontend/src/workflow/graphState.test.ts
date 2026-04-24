@@ -5,6 +5,9 @@ import {
     createNodeId,
     deleteSelectedElements,
     getDefaultNodeData,
+    getNodeLabel,
+    updateWorkflowNode,
+    validateTaskTitle,
 } from './graphState'
 
 describe('graph state helpers', () => {
@@ -13,7 +16,7 @@ describe('graph state helpers', () => {
 
         expect(node.id).toBe('node_1')
         expect(node.position).toEqual({ x: 120, y: 90 })
-        expect(node.data.label).toBe('task node')
+        expect(node.data.nodeType).toBe('task')
     })
 
     it('creates edge when connection is made', () => {
@@ -68,5 +71,56 @@ describe('graph state helpers', () => {
     it('creates stable node ids', () => {
         expect(createNodeId(1)).toBe('node_1')
         expect(createNodeId(25)).toBe('node_25')
+    })
+
+    it('provides defaults for each node type', () => {
+        expect(getDefaultNodeData('start').nodeType).toBe('start')
+        expect(getDefaultNodeData('task').nodeType).toBe('task')
+        expect(getDefaultNodeData('approval').nodeType).toBe('approval')
+        expect(getDefaultNodeData('automated').nodeType).toBe('automated')
+        expect(getDefaultNodeData('end').nodeType).toBe('end')
+    })
+
+    it('updates selected node data', () => {
+        const nodes: Node[] = [
+            {
+                id: 'node_1',
+                type: 'default',
+                position: { x: 0, y: 0 },
+                data: getDefaultNodeData('task'),
+            },
+        ]
+
+        const updated = updateWorkflowNode(nodes, 'node_1', (data) => {
+            if (data.nodeType !== 'task') return data
+            return { ...data, title: 'Collect documents' }
+        })
+
+        const nodeData = updated[0].data
+        expect(nodeData.nodeType).toBe('task')
+        if (nodeData.nodeType === 'task') {
+            expect(nodeData.title).toBe('Collect documents')
+        }
+    })
+
+    it('validates task title as required', () => {
+        const task = getDefaultNodeData('task')
+        if (task.nodeType !== 'task') {
+            throw new Error('Expected task node type')
+        }
+
+        const emptyTask = { ...task, title: '   ' }
+        const validTask = { ...task, title: 'Collect docs' }
+
+        expect(validateTaskTitle(emptyTask)).toBe('Task title is required')
+        expect(validateTaskTitle(validTask)).toBeNull()
+    })
+
+    it('builds display label based on node data type', () => {
+        const task = getDefaultNodeData('task')
+        const start = getDefaultNodeData('start')
+
+        expect(getNodeLabel(task)).toBe('Task step')
+        expect(getNodeLabel(start)).toBe('Start workflow')
     })
 })

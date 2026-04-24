@@ -83,11 +83,21 @@ Purpose: Track everything done during this case study build.
 	- Unit tests passed (7/7)
 	- Build passed
 
+#### 11. Increment 3 Implementation (Node Form Panel)
+- Added typed node data models for start, task, approval, automated, and end nodes.
+- Added node detail form panel that changes based on selected node type.
+- Added editable fields for all node types (required minimum set).
+- Added task title required validation and inline error message.
+- Added helper functions for node update, label preview, and validation.
+- Expanded unit tests for defaults, update behavior, labels, and validation.
+- Verified gates:
+	- Unit tests passed (11/11)
+	- Build passed
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
 ## Next Planned Steps
-- Increment 3: implement node forms and unit test form behavior.
 - Increment 4: add API layer and unit test service behavior.
 - Increment 5: add validation/sandbox and unit test validators.
 - Final phase: run integration tests, then system tests.
