@@ -58,6 +58,8 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 - Auto-layout workflow nodes
 - Show validation errors directly on affected nodes
 - Save lightweight per-node version history entries
+- Download current workflow graph as high-res PNG image
+- Load predefined interactive sample workflow with perfect topology
 - Use custom workflow card nodes with clearer visual types and friendlier onboarding copy
 - Toggle between a polished Light Mode and a high-contrast Dark Mode via a button in the header
 - Fully responsive on mobile: tab navigation (Steps / Canvas / Details) with tap-to-add buttons

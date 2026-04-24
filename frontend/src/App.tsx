@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { toPng } from 'html-to-image'
 import ReactFlow, {
   addEdge,
   applyEdgeChanges,
@@ -689,6 +690,60 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
     commitGraph(layouted.nodes, layouted.edges)
   }, [commitGraph, edges, nodes])
 
+  const loadSampleWorkflow = useCallback(() => {
+    // Row 1 (L→R): Start → Task → Tech Eval → Final HR
+    // Row 2 (L→R): Gen AI → Send Offer → End (positioned under row 1, rightmost first)
+    const r1y = 60
+    const r2y = 280
+    const sampleNodes: Node<WorkflowData>[] = [
+      { id: 's1', type: 'workflow', position: { x: 40,  y: r1y }, data: { nodeType: 'start',    startTitle: 'Tredence Onboarding: Subarta Ghosh' } },
+      { id: 's2', type: 'workflow', position: { x: 260, y: r1y }, data: { nodeType: 'task',     title: 'Submit GitHub & UI Projects', description: 'Share all project repos and prototypes', assignee: 'Subarta Ghosh', dueDate: 'Day 1' } },
+      { id: 's3', type: 'workflow', position: { x: 480, y: r1y }, data: { nodeType: 'approval', title: 'Technical Evaluation', approverRole: 'Tech Lead', dueDate: 'Day 2' } },
+      { id: 's4', type: 'workflow', position: { x: 700, y: r1y }, data: { nodeType: 'approval', title: 'Final HR Sign-Off', approverRole: 'HR Manager', dueDate: 'Day 3' } },
+      { id: 's5', type: 'workflow', position: { x: 700, y: r2y }, data: { nodeType: 'automated', title: 'Generate AI Intern Offer', description: 'AI-generated personalised offer package' } },
+      { id: 's6', type: 'workflow', position: { x: 480, y: r2y }, data: { nodeType: 'automated', title: 'Send Offer Email', description: 'Auto-send official offer letter to candidate' } },
+      { id: 's7', type: 'workflow', position: { x: 260, y: r2y }, data: { nodeType: 'end',      endMessage: 'Subarta Onboarded Successfully', summaryFlag: true } },
+    ]
+    const sampleEdges: Edge[] = [
+      { id: 'e1', source: 's1', target: 's2', type: 'smoothstep', animated: true },
+      { id: 'e2', source: 's2', target: 's3', type: 'smoothstep', animated: true },
+      { id: 'e3', source: 's3', target: 's4', type: 'smoothstep', animated: true },
+      { id: 'e4', source: 's4', target: 's5', type: 'smoothstep', animated: true }, // straight down ↓
+      { id: 'e5', source: 's5', target: 's6', type: 'smoothstep', animated: true }, // ←
+      { id: 'e6', source: 's6', target: 's7', type: 'smoothstep', animated: true }, // ←
+    ]
+    const versions: NodeVersions = {}
+    sampleNodes.forEach((n) => {
+      versions[n.id] = [createVersionEntry(n.data, 'Loaded from sample')]
+    })
+    setNodeVersions(versions)
+    commitGraph(sampleNodes, sampleEdges)
+    if (isMobile) setActiveTab('canvas')
+  }, [commitGraph, isMobile])
+
+  const downloadGraphImage = useCallback(() => {
+    const el = reactFlowWrapper.current
+    if (!el) return
+    toPng(el, {
+      backgroundColor: isDarkMode ? '#0d1117' : '#eef4fc',
+      pixelRatio: 2,
+      filter: (node) => {
+        // exclude controls overlay but keep everything else
+        if (node instanceof Element) {
+          if (node.classList?.contains('react-flow__panel')) return false
+        }
+        return true
+      },
+    }).then((dataUrl) => {
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = 'tredence-workflow.png'
+      link.click()
+    }).catch((err) => {
+      console.error('Download failed', err)
+    })
+  }, [isDarkMode])
+
   // Mobile: add a node at center of canvas
   const addNodeAtCenter = useCallback(
     (type: WorkflowNodeType) => {
@@ -742,7 +797,7 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
           {NODE_TYPES.map((nodeType) => (
             <li key={nodeType}>
               <div className="node-chip-row">
-                <button type="button" className="node-chip" draggable onDragStart={(event) => onDragStart(event, nodeType)}>
+                <button type="button" className="node-chip" data-node-type={nodeType} draggable onDragStart={(event) => onDragStart(event, nodeType)}>
                   <span className="node-chip-title">{nodeType}</span>
                   <span className="node-chip-copy">
                     {nodeType === 'start' && 'Where the workflow begins'}
@@ -776,7 +831,8 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
               <div className="node-chip-row">
                 <button
                   type="button"
-                  className="node-chip"
+                  className="node-chip node-chip--template"
+                  data-node-type="template"
                   draggable
                   onDragStart={(event) => onTemplateDragStart(event, template.id)}
                 >
@@ -823,17 +879,19 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
         </div>
         <div className="canvas-toolbar">
           <div className="toolbar-actions">
-            <button type="button" onClick={undo} disabled={history.past.length === 0}>
-              Undo
-            </button>
-            <button type="button" onClick={redo} disabled={history.future.length === 0}>
-              Redo
-            </button>
-            <button type="button" onClick={applyAutoLayout} disabled={nodes.length === 0}>
-              Auto-layout
-            </button>
-            <button type="button" onClick={deleteSelection} disabled={!selectedNodeId && !selectedEdgeId}>
-              Delete
+            <button type="button" onClick={undo} disabled={history.past.length === 0}>Undo</button>
+            <button type="button" onClick={redo} disabled={history.future.length === 0}>Redo</button>
+            <button type="button" onClick={applyAutoLayout} disabled={nodes.length === 0}>Auto-layout</button>
+            <button type="button" onClick={deleteSelection} disabled={!selectedNodeId && !selectedEdgeId}>Delete</button>
+            <button type="button" className="sample-btn" onClick={loadSampleWorkflow}>✦ Sample</button>
+            <button type="button" className="download-btn" onClick={downloadGraphImage} disabled={nodes.length === 0}
+              title="Download graph as PNG">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Download
             </button>
           </div>
         </div>

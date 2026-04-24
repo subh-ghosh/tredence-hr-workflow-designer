@@ -191,6 +191,12 @@ Purpose: Track everything done during this case study build.
 - Changed `+` tap button color from blue to the app's warm orangish gradient (`#c2461a → #e8843a`) for consistency.
 - Hidden "Drag & drop" badge and drag hint text on mobile; replaced with mobile-specific instructional tip.
 
+### UI Polish & Functional Enhancements
+- **Colourful Sidebar Chips**: Refactored the `node-chip` styles to map left-edge gradient borders and background colours directly to the canvas node types (green for start, blue for task, amber for approval, purple for automation, rose for end). Overrode dark mode backgrounds with matching high-contrast dark tones.
+- **Premium Simulation Log Timeline**: Replaced the plain `<ol>` workflow test simulator result with an animated, staggered load vertical line timeline, complete with coloured SVG indicator dots and "SUCCESS" pill badges.
+- **Workflow Sample Auto-loader**: Added a distinct `✦ Sample` orange gradient button to instantly inject a 7-step pre-built Tredence Onboarding workflow graph in a clean, perfect 2-row "U" shape linear path without validation edge rules.
+- **Full-Graph PNG Export**: Installed `html-to-image` and appended a blue `⬇ Download` button to capture retina-scaled 2x PNG snaps of the current React Flow workflow canvas. Automatically detects active Dark/Light mode theme to shade the background.
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
