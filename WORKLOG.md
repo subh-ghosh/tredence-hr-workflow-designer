@@ -146,6 +146,7 @@ Purpose: Track everything done during this case study build.
 	- production build
 	- lint
 - Updated README with assumptions and a clearer completed-vs-next section for submission.
+- Added a reusable submission note with repo summary, architecture highlights, tricky bug solved, and optional Vercel deployment guidance.
 
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
