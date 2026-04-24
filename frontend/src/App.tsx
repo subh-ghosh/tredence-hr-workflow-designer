@@ -24,7 +24,13 @@ import {
   type WorkflowData,
   type WorkflowNodeType,
 } from './workflow/graphState'
-import { getAutomations, type AutomationAction } from './api/mockApi'
+import {
+  getAutomations,
+  simulateWorkflow,
+  type AutomationAction,
+  type StepLog,
+} from './api/mockApi'
+import { validateWorkflow } from './workflow/validation'
 
 const NODE_TYPES: WorkflowNodeType[] = [
   'start',
@@ -46,6 +52,9 @@ function CanvasWorkspace() {
   const [automations, setAutomations] = useState<AutomationAction[]>([])
   const [automationsLoading, setAutomationsLoading] = useState(true)
   const [automationsError, setAutomationsError] = useState('')
+  const [simulationErrors, setSimulationErrors] = useState<string[]>([])
+  const [simulationLogs, setSimulationLogs] = useState<StepLog[]>([])
+  const [simulationLoading, setSimulationLoading] = useState(false)
 
   const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
@@ -143,6 +152,27 @@ function CanvasWorkspace() {
     },
     [updateSelectedNode],
   )
+
+  const runSimulation = useCallback(async () => {
+    const errors = validateWorkflow(nodes, edges)
+    setSimulationErrors(errors)
+    setSimulationLogs([])
+
+    if (errors.length > 0) {
+      return
+    }
+
+    setSimulationLoading(true)
+
+    try {
+      const result = await simulateWorkflow({ nodes, edges })
+      setSimulationLogs(result.steps)
+    } catch {
+      setSimulationErrors(['Simulation failed.'])
+    } finally {
+      setSimulationLoading(false)
+    }
+  }, [edges, nodes])
 
   return (
     <div className="panels">
@@ -398,6 +428,35 @@ function CanvasWorkspace() {
             Label preview: {getNodeLabel(selectedNode.data)}
           </p>
         )}
+
+        <div className="sandbox-panel">
+          <div className="sandbox-header">
+            <h3>Sandbox</h3>
+            <button type="button" onClick={runSimulation} disabled={simulationLoading}>
+              {simulationLoading ? 'Running...' : 'Run Simulation'}
+            </button>
+          </div>
+
+          <p className="panel-hint">Validate the graph and run the mock workflow.</p>
+
+          {simulationErrors.length > 0 && (
+            <ul className="error-list" data-testid="simulation-errors">
+              {simulationErrors.map((error) => (
+                <li key={error}>{error}</li>
+              ))}
+            </ul>
+          )}
+
+          {simulationLogs.length > 0 && (
+            <ol className="log-list" data-testid="simulation-logs">
+              {simulationLogs.map((log) => (
+                <li key={log.stepId}>
+                  <strong>{log.status}</strong>: {log.message}
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
       </aside>
     </div>
   )
@@ -408,7 +467,7 @@ function App() {
     <div className="app-shell">
       <header className="top-bar">
         <h1>HR Workflow Designer</h1>
-        <p>Increment 4: local mock API layer ready</p>
+        <p>Increment 5: validation and sandbox ready</p>
       </header>
       <ReactFlowProvider>
         <CanvasWorkspace />

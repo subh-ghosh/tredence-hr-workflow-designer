@@ -142,6 +142,43 @@
   font-size: 0.88rem;
 }
 
+.sandbox-panel {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sandbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sandbox-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.sandbox-header button {
+  border: 1px solid #94a3b8;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.error-list,
+.log-list {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  color: #334155;
+}
+
+.error-list {
+  color: #b91c1c;
+}
+
 @media (max-width: 1024px) {
   .panels {
     grid-template-columns: 1fr;

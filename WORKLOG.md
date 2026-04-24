@@ -107,11 +107,27 @@ Purpose: Track everything done during this case study build.
 	- Unit tests passed (15/15)
 	- Build passed
 
+#### 13. Increment 5 Implementation (Validation and Sandbox)
+- Added workflow validation helpers for:
+	- start node rule
+	- missing incoming and outgoing connections
+	- cycle detection
+- Added unit tests for validator behavior.
+- Added a simple Sandbox section in the right panel.
+- Added a Run Simulation action that:
+	- validates the graph first
+	- shows errors if invalid
+	- calls the mock simulate API if valid
+	- shows step-by-step execution logs
+- Updated the app header to reflect Increment 5 status.
+- Verified gates:
+	- Unit tests passed (19/19)
+	- Build passed
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
 ## Next Planned Steps
-- Increment 5: add validation/sandbox and unit test validators.
 - Final phase: run integration tests, then system tests.
 
 ## How To Use This Log
