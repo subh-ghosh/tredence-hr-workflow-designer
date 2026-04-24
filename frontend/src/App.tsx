@@ -1016,7 +1016,32 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
                   {validationPreview.nodeErrors[selectedNode.id].map((err) => <li key={err}>{err}</li>)}
                 </ul>
               ) : null}
-              <button type="button" className="secondary-button" style={{ marginTop: 16 }} onClick={() => setMobileEditOpen(false)}>Done</button>
+
+              {/* Live label */}
+              <div className="info-card" style={{ marginTop: 16 }}>
+                <strong>Live label</strong>
+                <p className="panel-hint">This is the name people will see on the workflow map.</p>
+                <p className="info-emphasis">{getNodeLabel(selectedNode.data)}</p>
+              </div>
+
+              {/* Version history */}
+              <div className="history-panel">
+                <div className="sandbox-header">
+                  <h3>Version history</h3>
+                  <button type="button" onClick={saveSelectedNodeVersion}>Save version</button>
+                </div>
+                <ul className="history-list">
+                  {selectedNodeHistory.slice().reverse().map((entry) => (
+                    <li key={`${entry.timestamp}-${entry.summary}`}>
+                      <strong>{entry.summary}</strong>
+                      <span>{entry.label}</span>
+                      <small>{entry.timestamp}</small>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <button type="button" className="secondary-button" style={{ marginTop: 16, width: '100%' }} onClick={() => setMobileEditOpen(false)}>Done</button>
             </div>
           </div>
         </div>
