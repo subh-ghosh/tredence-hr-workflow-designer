@@ -8,6 +8,10 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 - GitHub: https://github.com/subh-ghosh/tredence-hr-workflow-designer
 - Live demo: https://tredence-hr-workflow-designer-one.vercel.app/
 
+## Preview
+![Workflow Builder Interface](assets/output%20images/frontend-1.png)
+![Complex Workflow Execution](assets/output%20images/Screenshot%20From%202026-04-24%2019-22-18.png)
+
 ## Stack
 - React + TypeScript + Vite
 - React Flow
