@@ -157,6 +157,17 @@ Purpose: Track everything done during this case study build.
 	- lint
 - Updated README, submission note, and test log to reflect the optional features and live demo link.
 
+#### 17. UI Modernization & UX Pass
+- Reworked the UI shell to feel more modern and guided for first-time users.
+- Added a stronger visual header with simple "how to use" cues.
+- Replaced plain default-looking graph nodes with custom workflow card nodes by step type.
+- Improved panel wording, button placement, and canvas presentation so actions feel more discoverable.
+- Tuned panel height, overflow, and spacing so the left, center, and right columns feel more balanced during real usage.
+- Re-ran:
+	- unit tests
+	- production build
+	- lint
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 

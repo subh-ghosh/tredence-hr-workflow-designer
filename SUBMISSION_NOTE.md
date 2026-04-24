@@ -12,6 +12,7 @@ What I built:
 - Includes step editing forms, local mock API integration, validation, and a workflow test panel
 - Built incrementally with unit tests after each major step, followed by integration and final system verification
 - Includes bonus features: Export/Import JSON, node templates, Undo/Redo, auto-layout, visual node validation, and lightweight node version history
+- Includes a modernized guided UI with custom workflow cards and clearer onboarding for first-time users
 
 Architecture highlights:
 - Canvas and main UI in `frontend/src/App.tsx`
@@ -25,9 +26,8 @@ One tricky bug I solved:
 
 What I intentionally kept simple:
 - In-app mock API instead of a real backend
-- Default React Flow node renderer instead of a fully custom node card UI
 - No persistence/auth because the case study explicitly did not require them
 
 What I would add with more time:
-- Custom node UI cards
 - Full browser E2E automation
+- Further responsive polish for denser workflow screens

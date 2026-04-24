@@ -16,7 +16,7 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 
 ## Architecture
 - `frontend/src/App.tsx`
-  Main UI shell. Holds the three-pane layout, React Flow canvas, details form, and test panel.
+  Main UI shell. Holds the modernized three-pane layout, custom React Flow node cards, details form, and test panel.
 - `frontend/src/workflow/graphState.ts`
   Workflow node defaults, labels, update helpers, and delete helpers.
 - `frontend/src/workflow/validation.ts`
@@ -41,6 +41,7 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 - Auto-layout workflow nodes
 - Show validation errors directly on affected nodes
 - Save lightweight per-node version history entries
+- Use custom workflow card nodes with clearer visual types and friendlier onboarding copy
 
 ## Workflow validation
 - Exactly one Start node is required
@@ -71,6 +72,7 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 - Kept state handling plain and close to the UI to avoid over-engineering.
 - Split graph logic, validation logic, and mock API logic into small files so each part is easy to test.
 - Kept labels and field names simple so the browser demo is easy to follow.
+- Added a more guided, modern UI so first-time users can understand the flow without project context.
 
 ## Why this structure scales
 - Canvas behavior, validation, and API behavior are separated instead of mixed into one large component.
@@ -96,7 +98,6 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
   - integration handoff from validation to simulation
 
 ## What is still simple / could be improved
-- Canvas nodes still use the default React Flow node renderer instead of fully custom card nodes.
 - Final system testing is kept lightweight and documented in the repo rather than using a full browser E2E tool.
 
 ## Completed vs. next with more time
@@ -116,8 +117,8 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
   - Auto-layout
   - Node version history
 - Next with more time:
-  - custom node UI cards
   - stronger end-to-end browser automation
+  - deeper responsive polish for very dense workflows
 
 ## Tricky bug solved
 - The simulation originally followed node creation order instead of the actual connected workflow path.
