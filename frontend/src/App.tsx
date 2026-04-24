@@ -111,6 +111,14 @@ function getNodeTone(nodeType: WorkflowNodeType): {
   }
 }
 
+function getMutedNodeToneClass(nodeType: WorkflowNodeType): string {
+  if (nodeType === 'start') return 'workflow-card-start-muted'
+  if (nodeType === 'task') return 'workflow-card-task-muted'
+  if (nodeType === 'approval') return 'workflow-card-approval-muted'
+  if (nodeType === 'automated') return 'workflow-card-automated-muted'
+  return 'workflow-card-end-muted'
+}
+
 function WorkflowCardNode({ data, selected }: NodeProps<WorkflowData>) {
   const tone = getNodeTone(data.nodeType)
 
@@ -137,14 +145,80 @@ function createVersionEntry(data: WorkflowData, summary: string): VersionEntry {
 function buildNodeStyles(
   nodes: Node<WorkflowData>[],
   nodeErrors: Record<string, string[]>,
+  selectedNodeId: string | null,
+  selectedEdgeId: string | null,
 ): Node<WorkflowData>[] {
+  const hasSelection = Boolean(selectedNodeId || selectedEdgeId)
+
   return nodes.map((node) => {
     const hasError = Boolean(nodeErrors[node.id]?.length)
+    const isSelected = selectedNodeId === node.id
+    const classNames = []
+
+    if (hasError) {
+      classNames.push('workflow-node-has-error')
+    }
+
+    if (hasSelection && !isSelected) {
+      classNames.push('workflow-node-is-muted')
+      classNames.push(getMutedNodeToneClass(node.data.nodeType))
+    }
 
     return {
       ...node,
-      className: hasError ? 'workflow-node-has-error' : undefined,
+      className: classNames.join(' ') || undefined,
       style: undefined,
+    }
+  })
+}
+
+function buildEdgeStyles(
+  edges: Edge[],
+  selectedNodeId: string | null,
+  selectedEdgeId: string | null,
+): Edge[] {
+  const hasSelection = Boolean(selectedNodeId || selectedEdgeId)
+
+  return edges.map((edge) => {
+    const isSelectedEdge = selectedEdgeId === edge.id
+    const isConnectedToSelectedNode = selectedNodeId
+      ? edge.source === selectedNodeId || edge.target === selectedNodeId
+      : false
+    const isHighlighted = isSelectedEdge || isConnectedToSelectedNode
+
+    if (!hasSelection) {
+      return {
+        ...edge,
+        animated: true,
+        style: {
+          ...edge.style,
+          stroke: '#235b9c',
+          strokeWidth: 2.2,
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 18,
+          height: 18,
+          color: '#235b9c',
+        },
+      }
+    }
+
+    return {
+      ...edge,
+      animated: isHighlighted,
+      style: {
+        ...edge.style,
+        stroke: isHighlighted ? '#74a3ff' : '#334155',
+        strokeWidth: isHighlighted ? 3.5 : 2.2,
+        opacity: isHighlighted ? 1 : 0.58,
+      },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: 18,
+        height: 18,
+        color: isHighlighted ? '#74a3ff' : '#334155',
+      },
     }
   })
 }
@@ -213,8 +287,13 @@ function CanvasWorkspace() {
   )
 
   const displayNodes = useMemo(
-    () => buildNodeStyles(nodes, validationPreview.nodeErrors),
-    [nodes, validationPreview.nodeErrors],
+    () => buildNodeStyles(nodes, validationPreview.nodeErrors, selectedNodeId, selectedEdgeId),
+    [nodes, selectedEdgeId, selectedNodeId, validationPreview.nodeErrors],
+  )
+
+  const displayEdges = useMemo(
+    () => buildEdgeStyles(edges, selectedNodeId, selectedEdgeId),
+    [edges, selectedEdgeId, selectedNodeId],
   )
 
   const selectedAutomation = useMemo(() => {
@@ -679,11 +758,17 @@ function CanvasWorkspace() {
           </div>
         </div>
 
-        <div ref={reactFlowWrapper} className="canvas-surface" onDrop={onDrop} onDragOver={onDragOver}>
+        <div
+          ref={reactFlowWrapper}
+          className={`canvas-surface ${selectedNodeId || selectedEdgeId ? 'has-selection' : ''}`}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+        >
           <ReactFlow
+            className={selectedNodeId || selectedEdgeId ? 'workflow-has-selection' : undefined}
             key={graphRenderKey}
             nodes={displayNodes}
-            edges={edges}
+            edges={displayEdges}
             nodeTypes={nodeTypes}
             defaultViewport={viewport}
             onNodesChange={onNodesChange}

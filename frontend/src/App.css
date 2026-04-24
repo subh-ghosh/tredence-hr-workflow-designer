@@ -321,6 +321,7 @@
 }
 
 .canvas-surface {
+  position: relative;
   height: 620px;
   border-radius: 22px;
   border: 1px solid rgba(138, 165, 194, 0.22);
@@ -330,8 +331,29 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
+.canvas-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: transparent;
+  transition: background 180ms ease;
+  z-index: 0;
+}
+
+.canvas-surface.has-selection::after {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(39, 53, 72, 0.03), transparent 42%),
+    linear-gradient(180deg, rgba(24, 30, 38, 0.06), rgba(24, 30, 38, 0.1));
+}
+
 .react-flow__attribution {
   display: none;
+}
+
+.canvas-surface .react-flow {
+  position: relative;
+  z-index: 1;
 }
 
 .react-flow__controls {
@@ -372,8 +394,102 @@
 }
 
 .workflow-card.is-selected {
-  border-color: rgba(31, 89, 158, 0.52);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12), 0 22px 38px rgba(18, 37, 60, 0.16);
+  transform: translateY(-2px) scale(1.04);
+  border-color: rgba(120, 170, 255, 0.78);
+  box-shadow: 0 0 0 5px rgba(74, 135, 255, 0.24), 0 28px 48px rgba(4, 10, 18, 0.34);
+}
+
+.workflow-node-is-muted .workflow-card {
+  transform: scale(0.97);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.26);
+  border-color: rgba(85, 100, 124, 0.58);
+}
+
+.workflow-node-is-muted .workflow-card-title {
+  color: rgba(243, 247, 255, 0.94);
+}
+
+.workflow-node-is-muted .workflow-card-helper {
+  color: rgba(208, 217, 231, 0.72);
+}
+
+.workflow-node-is-muted .workflow-handle {
+  background: #0f1723;
+  border-color: rgba(165, 191, 226, 0.72);
+}
+
+.workflow-node-is-muted.workflow-card-start-muted .workflow-card {
+  background: linear-gradient(180deg, #1f3c34, #162c26);
+}
+
+.workflow-node-is-muted.workflow-card-start-muted .workflow-card-kicker {
+  color: #63d4a6;
+}
+
+.workflow-node-is-muted.workflow-card-task-muted .workflow-card {
+  background: linear-gradient(180deg, #1d304a, #152334);
+}
+
+.workflow-node-is-muted.workflow-card-task-muted .workflow-card-kicker {
+  color: #80b5ff;
+}
+
+.workflow-node-is-muted.workflow-card-approval-muted .workflow-card {
+  background: linear-gradient(180deg, #42361f, #302717);
+}
+
+.workflow-node-is-muted.workflow-card-approval-muted .workflow-card-kicker {
+  color: #f0c971;
+}
+
+.workflow-node-is-muted.workflow-card-automated-muted .workflow-card {
+  background: linear-gradient(180deg, #312547, #221a31);
+}
+
+.workflow-node-is-muted.workflow-card-automated-muted .workflow-card-kicker {
+  color: #bd95ff;
+}
+
+.workflow-node-is-muted.workflow-card-end-muted .workflow-card {
+  background: linear-gradient(180deg, #49291e, #341d15);
+}
+
+.workflow-node-is-muted.workflow-card-end-muted .workflow-card-kicker {
+  color: #ffb184;
+}
+
+.workflow-has-selection .react-flow__pane {
+  background:
+    radial-gradient(circle at top, rgba(52, 78, 112, 0.03), transparent 36%),
+    linear-gradient(180deg, rgba(237, 242, 247, 0.92), rgba(225, 231, 238, 0.94));
+}
+
+.workflow-has-selection .react-flow__background {
+  opacity: 0.74;
+}
+
+.workflow-has-selection .react-flow__background path {
+  stroke: rgba(117, 135, 158, 0.16);
+}
+
+.workflow-has-selection .react-flow__edge-path {
+  transition: stroke 160ms ease, opacity 160ms ease, stroke-width 160ms ease;
+}
+
+.workflow-has-selection .react-flow__controls {
+  border-color: rgba(130, 147, 170, 0.26);
+  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.08);
+}
+
+.workflow-has-selection .react-flow__controls button {
+  background: rgba(246, 249, 252, 0.92);
+  color: #18314d;
+}
+
+.workflow-has-selection .react-flow__minimap {
+  border-color: rgba(130, 147, 170, 0.24);
+  background: rgba(244, 247, 251, 0.86);
+  box-shadow: 0 12px 20px rgba(15, 23, 42, 0.08);
 }
 
 .workflow-card-kicker {
