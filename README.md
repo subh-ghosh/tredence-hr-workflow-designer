@@ -4,6 +4,10 @@ This project is a small workflow builder for HR teams.
 
 Goal: allow an HR admin to create, edit, validate, and test simple internal workflows such as onboarding, leave approval, or document verification.
 
+## Links
+- GitHub: https://github.com/subh-ghosh/tredence-hr-workflow-designer
+- Live demo: https://tredence-hr-workflow-designer-one.vercel.app/
+
 ## Stack
 - React + TypeScript + Vite
 - React Flow
@@ -31,6 +35,12 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 - Load automation actions from a local mock API
 - Validate workflow structure before simulation
 - Run mock simulation and show step-by-step logs in workflow order
+- Export and import workflows as JSON
+- Reuse predefined node templates
+- Undo and redo meaningful graph edits
+- Auto-layout workflow nodes
+- Show validation errors directly on affected nodes
+- Save lightweight per-node version history entries
 
 ## Workflow validation
 - Exactly one Start node is required
@@ -76,7 +86,7 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 ## Testing summary
 - Incremental unit-test-first workflow was followed during development.
 - Current verification:
-  - `npm run test:run` -> passing
+  - `npm run test:run` -> 34 passed
   - `npm run build` -> passing
   - `npm run lint` -> passing
 - Coverage includes:
@@ -87,7 +97,6 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 
 ## What is still simple / could be improved
 - Canvas nodes still use the default React Flow node renderer instead of fully custom card nodes.
-- No import/export, undo/redo, or auto-layout yet.
 - Final system testing is kept lightweight and documented in the repo rather than using a full browser E2E tool.
 
 ## Completed vs. next with more time
@@ -98,10 +107,16 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
   - mock simulation API
   - validation and test panel
   - unit and integration coverage
+- Completed Optionals (Bonus):
+  - Export/Import workflow as JSON
+  - Node templates
+  - Undo/Redo
+  - Mini-map and zoom controls
+  - Workflow validation errors shown on nodes
+  - Auto-layout
+  - Node version history
 - Next with more time:
   - custom node UI cards
-  - import/export JSON
-  - undo/redo
   - stronger end-to-end browser automation
 
 ## Tricky bug solved

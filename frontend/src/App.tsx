@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactFlow, {
   addEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
   Background,
   Controls,
   MiniMap,
   ReactFlowProvider,
-  useEdgesState,
-  useNodesState,
   type Connection,
   type Edge,
+  type EdgeChange,
+  type Node,
+  type NodeChange,
   type ReactFlowInstance,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
@@ -30,7 +33,26 @@ import {
   type AutomationAction,
   type StepLog,
 } from './api/mockApi'
-import { validateWorkflow } from './workflow/validation'
+import {
+  autoLayoutWorkflow,
+  createTemplateNode,
+  getHighestNodeCounter,
+  normalizeWorkflowGraph,
+  parseWorkflowJson,
+  serializeWorkflow,
+} from './workflow/graphUtils'
+import {
+  appendNodeVersion,
+  createHistory,
+  type NodeVersions,
+  pushHistory,
+  redoHistory,
+  undoHistory,
+  type GraphSnapshot,
+  type VersionEntry,
+} from './workflow/history'
+import { WORKFLOW_TEMPLATES } from './workflow/templates'
+import { validateWorkflow, validateWorkflowDetailed } from './workflow/validation'
 
 const NODE_TYPES: WorkflowNodeType[] = [
   'start',
@@ -40,13 +62,70 @@ const NODE_TYPES: WorkflowNodeType[] = [
   'end',
 ]
 
+function createVersionEntry(data: WorkflowData, summary: string): VersionEntry {
+  return {
+    createdAt: Date.now(),
+    timestamp: new Date().toLocaleString(),
+    summary,
+    label: getNodeLabel(data),
+  }
+}
+
+function buildNodeStyles(
+  nodes: Node<WorkflowData>[],
+  nodeErrors: Record<string, string[]>,
+): Node<WorkflowData>[] {
+  return nodes.map((node) => {
+    const hasError = Boolean(nodeErrors[node.id]?.length)
+
+    return {
+      ...node,
+      style: hasError
+        ? {
+            ...node.style,
+            border: '2px solid #dc2626',
+            background: '#fef2f2',
+          }
+        : undefined,
+    }
+  })
+}
+
+function pruneNodeVersions(
+  versions: NodeVersions,
+  nodes: Node<WorkflowData>[],
+): NodeVersions {
+  const nodeIds = new Set(nodes.map((node) => node.id))
+
+  return Object.fromEntries(
+    Object.entries(versions).filter(([nodeId]) => nodeIds.has(nodeId)),
+  )
+}
+
+function getSupportedNodeChanges(changes: NodeChange[]): NodeChange[] {
+  return changes.filter(
+    (change) => !['add', 'replace', 'reset'].includes(String(change.type)),
+  )
+}
+
+function getSupportedEdgeChanges(changes: EdgeChange[]): EdgeChange[] {
+  return changes.filter(
+    (change) => !['add', 'replace', 'reset'].includes(String(change.type)),
+  )
+}
+
 function CanvasWorkspace() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const nodeCounter = useRef(0)
+  const latestGraphRef = useRef<GraphSnapshot>({ nodes: [], edges: [], nodeVersions: {} })
+  const activeEditNodeIdRef = useRef<string | null>(null)
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null)
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<WorkflowData>([])
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([])
+  const [nodes, setNodes] = useState<Node<WorkflowData>[]>([])
+  const [edges, setEdges] = useState<Edge[]>([])
+  const [history, setHistory] = useState(createHistory)
+  const [nodeVersions, setNodeVersions] = useState<NodeVersions>({})
+  const [graphRenderKey, setGraphRenderKey] = useState(0)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
   const [automations, setAutomations] = useState<AutomationAction[]>([])
@@ -55,6 +134,8 @@ function CanvasWorkspace() {
   const [simulationErrors, setSimulationErrors] = useState<string[]>([])
   const [simulationLogs, setSimulationLogs] = useState<StepLog[]>([])
   const [simulationLoading, setSimulationLoading] = useState(false)
+  const [importExportText, setImportExportText] = useState('')
+  const [importError, setImportError] = useState('')
 
   const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
@@ -66,10 +147,26 @@ function CanvasWorkspace() {
     return validateTaskTitle(selectedNode.data)
   }, [selectedNode])
 
+  const validationPreview = useMemo(
+    () => validateWorkflowDetailed(nodes, edges),
+    [nodes, edges],
+  )
+
+  const displayNodes = useMemo(
+    () => buildNodeStyles(nodes, validationPreview.nodeErrors),
+    [nodes, validationPreview.nodeErrors],
+  )
+
   const selectedAutomation = useMemo(() => {
     if (!selectedNode || selectedNode.data.nodeType !== 'automated') return null
     return automations.find((item) => item.id === selectedNode.data.actionId) ?? null
   }, [automations, selectedNode])
+
+  const selectedNodeHistory = selectedNodeId ? nodeVersions[selectedNodeId] ?? [] : []
+
+  useEffect(() => {
+    latestGraphRef.current = { nodes, edges, nodeVersions }
+  }, [edges, nodeVersions, nodes])
 
   useEffect(() => {
     async function loadAutomations() {
@@ -87,17 +184,165 @@ function CanvasWorkspace() {
     loadAutomations()
   }, [])
 
+  const clearSelection = useCallback(() => {
+    activeEditNodeIdRef.current = null
+    setSelectedNodeId(null)
+    setSelectedEdgeId(null)
+  }, [])
+
+  const syncSelection = useCallback(
+    (nextNodes: Node<WorkflowData>[], nextEdges: Edge[]) => {
+      const hasSelectedNode = selectedNodeId
+        ? nextNodes.some((node) => node.id === selectedNodeId)
+        : false
+      const hasSelectedEdge = selectedEdgeId
+        ? nextEdges.some((edge) => edge.id === selectedEdgeId)
+        : false
+
+      if (hasSelectedNode) {
+        setSelectedNodeId(selectedNodeId)
+        setSelectedEdgeId(null)
+        return
+      }
+
+      if (hasSelectedEdge) {
+        setSelectedEdgeId(selectedEdgeId)
+        setSelectedNodeId(null)
+        return
+      }
+
+      clearSelection()
+    },
+    [clearSelection, selectedEdgeId, selectedNodeId],
+  )
+
+  const applySnapshot = useCallback(
+    (snapshot: GraphSnapshot) => {
+      activeEditNodeIdRef.current = null
+      latestGraphRef.current = snapshot
+      setNodes(snapshot.nodes)
+      setEdges(snapshot.edges)
+      setNodeVersions(snapshot.nodeVersions)
+      setGraphRenderKey((current) => current + 1)
+      syncSelection(snapshot.nodes, snapshot.edges)
+    },
+    [syncSelection],
+  )
+
+  const commitGraph = useCallback(
+    (
+      nextNodes: Node<WorkflowData>[],
+      nextEdges: Edge[],
+      nextNodeVersions: NodeVersions = latestGraphRef.current.nodeVersions,
+    ) => {
+      activeEditNodeIdRef.current = null
+      const stateBeforeChange = latestGraphRef.current;
+      setHistory((current) => pushHistory(current, stateBeforeChange))
+      const snapshot = {
+        nodes: nextNodes,
+        edges: nextEdges,
+        nodeVersions: pruneNodeVersions(nextNodeVersions, nextNodes),
+      }
+      latestGraphRef.current = snapshot
+      setNodes(nextNodes)
+      setEdges(nextEdges)
+      setNodeVersions(snapshot.nodeVersions)
+      setGraphRenderKey((current) => current + 1)
+      syncSelection(nextNodes, nextEdges)
+    },
+    [syncSelection],
+  )
+
+  const commitNodeEdit = useCallback(
+    (
+      nodeId: string,
+      nextNodes: Node<WorkflowData>[],
+      nextEdges: Edge[],
+      nextNodeVersions: NodeVersions = latestGraphRef.current.nodeVersions,
+    ) => {
+      if (activeEditNodeIdRef.current !== nodeId) {
+        const stateBeforeChange = latestGraphRef.current;
+        setHistory((current) => pushHistory(current, stateBeforeChange))
+        activeEditNodeIdRef.current = nodeId
+      }
+      const snapshot = {
+        nodes: nextNodes,
+        edges: nextEdges,
+        nodeVersions: pruneNodeVersions(nextNodeVersions, nextNodes),
+      }
+      latestGraphRef.current = snapshot
+      setNodes(nextNodes)
+      setEdges(nextEdges)
+      setNodeVersions(snapshot.nodeVersions)
+    },
+    [],
+  )
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      const supportedChanges = getSupportedNodeChanges(changes)
+      if (supportedChanges.length === 0) return
+
+      const hasRemove = supportedChanges.some((change) => change.type === 'remove')
+      if (!hasRemove) {
+        setNodes((current) => applyNodeChanges(supportedChanges, current))
+        return
+      }
+
+      const current = latestGraphRef.current
+      const nextNodes = applyNodeChanges(supportedChanges, current.nodes)
+      const remainingIds = new Set(nextNodes.map((node) => node.id))
+      const nextEdges = current.edges.filter(
+        (edge) => remainingIds.has(edge.source) && remainingIds.has(edge.target),
+      )
+      setNodeVersions((currentVersions) =>
+        Object.fromEntries(
+          Object.entries(currentVersions).filter(([nodeId]) => remainingIds.has(nodeId)),
+        ),
+      )
+
+      commitGraph(nextNodes, nextEdges)
+    },
+    [commitGraph],
+  )
+
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      const supportedChanges = getSupportedEdgeChanges(changes)
+      if (supportedChanges.length === 0) return
+
+      const hasRemove = supportedChanges.some((change) => change.type === 'remove')
+      if (!hasRemove) {
+        setEdges((current) => applyEdgeChanges(supportedChanges, current))
+        return
+      }
+
+      const current = latestGraphRef.current
+      commitGraph(current.nodes, applyEdgeChanges(supportedChanges, current.edges))
+    },
+    [commitGraph],
+  )
+
   const onConnect = useCallback(
     (params: Connection) => {
-      setEdges((eds) => addEdge(params, eds))
+      const current = latestGraphRef.current
+      commitGraph(current.nodes, addEdge(params, current.edges))
     },
-    [setEdges],
+    [commitGraph],
   )
 
   const onDragStart = useCallback((event: React.DragEvent<HTMLButtonElement>, nodeType: WorkflowNodeType) => {
     event.dataTransfer.setData('application/reactflow', nodeType)
     event.dataTransfer.effectAllowed = 'move'
   }, [])
+
+  const onTemplateDragStart = useCallback(
+    (event: React.DragEvent<HTMLButtonElement>, templateId: string) => {
+      event.dataTransfer.setData('application/reactflow-template', templateId)
+      event.dataTransfer.effectAllowed = 'move'
+    },
+    [],
+  )
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault()
@@ -109,7 +354,8 @@ function CanvasWorkspace() {
       event.preventDefault()
 
       const type = event.dataTransfer.getData('application/reactflow') as WorkflowNodeType
-      if (!type || !reactFlowInstance || !reactFlowWrapper.current) return
+      const templateId = event.dataTransfer.getData('application/reactflow-template')
+      if ((!type && !templateId) || !reactFlowInstance || !reactFlowWrapper.current) return
 
       const bounds = reactFlowWrapper.current.getBoundingClientRect()
       const position = reactFlowInstance.project({
@@ -118,22 +364,64 @@ function CanvasWorkspace() {
       })
 
       const nextId = createNodeId(++nodeCounter.current)
+      const current = latestGraphRef.current
+      if (templateId) {
+        const template = WORKFLOW_TEMPLATES.find((item) => item.id === templateId)
+        if (!template) return
+        const nextNode = createTemplateNode(nextId, position, template)
+        setNodeVersions((currentVersions) => ({
+          ...currentVersions,
+          [nextId]: [createVersionEntry(nextNode.data, `Created from template: ${template.label}`)],
+        }))
+        commitGraph(current.nodes.concat(nextNode), current.edges)
+        return
+      }
+
       const nextNode = addWorkflowNode(nextId, position, getDefaultNodeData(type))
-      setNodes((nds) => nds.concat(nextNode))
+      setNodeVersions((currentVersions) => ({
+        ...currentVersions,
+        [nextId]: [createVersionEntry(nextNode.data, 'Created step')],
+      }))
+      commitGraph(current.nodes.concat(nextNode), current.edges)
     },
-    [reactFlowInstance, setNodes],
+    [commitGraph, reactFlowInstance],
   )
 
   const deleteSelection = useCallback(() => {
-    const updated = deleteSelectedElements(nodes, edges, selectedNodeId, selectedEdgeId)
-    setNodes(updated.nodes)
-    setEdges(updated.edges)
-    setSelectedNodeId(null)
-    setSelectedEdgeId(null)
-  }, [edges, nodes, selectedEdgeId, selectedNodeId, setEdges, setNodes])
+    const current = latestGraphRef.current
+    const updated = deleteSelectedElements(
+      current.nodes,
+      current.edges,
+      selectedNodeId,
+      selectedEdgeId,
+    )
+    const remainingIds = new Set(updated.nodes.map((node) => node.id))
+    setNodeVersions((currentVersions) =>
+      Object.fromEntries(
+        Object.entries(currentVersions).filter(([nodeId]) => remainingIds.has(nodeId)),
+      ),
+    )
+    commitGraph(updated.nodes, updated.edges)
+  }, [commitGraph, selectedEdgeId, selectedNodeId])
+
+  const undo = useCallback(() => {
+    const result = undoHistory(history, latestGraphRef.current)
+    if (!result) return
+
+    setHistory(result.history)
+    applySnapshot(result.snapshot)
+  }, [applySnapshot, history])
+
+  const redo = useCallback(() => {
+    const result = redoHistory(history, latestGraphRef.current)
+    if (!result) return
+
+    setHistory(result.history)
+    applySnapshot(result.snapshot)
+  }, [applySnapshot, history])
 
   const panelTitle = useMemo(() => {
-    if (selectedNode) return `Selected node: ${selectedNode.id}`
+    if (selectedNode) return `Selected step: ${getNodeLabel(selectedNode.data)}`
     if (selectedEdgeId) return `Selected edge: ${selectedEdgeId}`
     return 'No selection'
   }, [selectedEdgeId, selectedNode])
@@ -141,9 +429,14 @@ function CanvasWorkspace() {
   const updateSelectedNode = useCallback(
     (updater: (data: WorkflowData) => WorkflowData) => {
       if (!selectedNodeId) return
-      setNodes((current) => updateWorkflowNode(current, selectedNodeId, updater))
+      const current = latestGraphRef.current
+      commitNodeEdit(
+        selectedNodeId,
+        updateWorkflowNode(current.nodes, selectedNodeId, updater),
+        current.edges,
+      )
     },
-    [selectedNodeId, setNodes],
+    [commitNodeEdit, selectedNodeId],
   )
 
   const patchSelectedNode = useCallback(
@@ -180,6 +473,18 @@ function CanvasWorkspace() {
     [updateSelectedNode],
   )
 
+  const saveSelectedNodeVersion = useCallback(() => {
+    if (!selectedNodeId || !selectedNode) return
+
+    setNodeVersions((currentVersions) =>
+      appendNodeVersion(
+        currentVersions,
+        selectedNodeId,
+        createVersionEntry(selectedNode.data, 'Saved version'),
+      ),
+    )
+  }, [selectedNode, selectedNodeId])
+
   const runSimulation = useCallback(async () => {
     const errors = validateWorkflow(nodes, edges)
     setSimulationErrors(errors)
@@ -201,6 +506,34 @@ function CanvasWorkspace() {
     }
   }, [edges, nodes])
 
+  const exportWorkflowJson = useCallback(() => {
+    setImportExportText(serializeWorkflow({ nodes, edges }))
+    setImportError('')
+  }, [edges, nodes])
+
+  const importWorkflowJson = useCallback(() => {
+    try {
+      const parsed = normalizeWorkflowGraph(parseWorkflowJson(importExportText))
+      nodeCounter.current = getHighestNodeCounter(parsed.nodes)
+      setNodeVersions(
+        Object.fromEntries(
+          parsed.nodes.map((node) => [node.id, [createVersionEntry(node.data, 'Imported step')]]),
+        ),
+      )
+      commitGraph(parsed.nodes, parsed.edges)
+      setImportError('')
+    } catch (error) {
+      setImportError(
+        error instanceof Error ? error.message : 'Could not import workflow JSON.',
+      )
+    }
+  }, [commitGraph, importExportText])
+
+  const applyAutoLayout = useCallback(() => {
+    const layouted = autoLayoutWorkflow({ nodes, edges })
+    commitGraph(layouted.nodes, layouted.edges)
+  }, [commitGraph, edges, nodes])
+
   return (
     <div className="panels">
       <aside className="panel" data-testid="panel-sidebar" aria-label="Node palette">
@@ -215,19 +548,47 @@ function CanvasWorkspace() {
             </li>
           ))}
         </ul>
+        <h3 className="section-title">Templates</h3>
+        <p className="panel-hint">Drag a ready-made step into the canvas.</p>
+        <ul className="node-list">
+          {WORKFLOW_TEMPLATES.map((template) => (
+            <li key={template.id}>
+              <button
+                type="button"
+                className="node-chip"
+                draggable
+                onDragStart={(event) => onTemplateDragStart(event, template.id)}
+              >
+                {template.label}
+              </button>
+            </li>
+          ))}
+        </ul>
       </aside>
 
       <main className="panel panel-canvas" data-testid="panel-canvas" aria-label="Workflow canvas area">
         <div className="canvas-toolbar">
           <h2>Workflow</h2>
-          <button type="button" onClick={deleteSelection} disabled={!selectedNodeId && !selectedEdgeId}>
-            Delete
-          </button>
+          <div className="toolbar-actions">
+            <button type="button" onClick={undo} disabled={history.past.length === 0}>
+              Undo
+            </button>
+            <button type="button" onClick={redo} disabled={history.future.length === 0}>
+              Redo
+            </button>
+            <button type="button" onClick={applyAutoLayout} disabled={nodes.length === 0}>
+              Auto-layout
+            </button>
+            <button type="button" onClick={deleteSelection} disabled={!selectedNodeId && !selectedEdgeId}>
+              Delete
+            </button>
+          </div>
         </div>
 
         <div ref={reactFlowWrapper} className="canvas-surface" onDrop={onDrop} onDragOver={onDragOver}>
           <ReactFlow
-            nodes={nodes}
+            key={graphRenderKey}
+            nodes={displayNodes}
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
@@ -242,12 +603,7 @@ function CanvasWorkspace() {
               setSelectedNodeId(null)
             }}
             onPaneClick={() => {
-              setSelectedNodeId(null)
-              setSelectedEdgeId(null)
-            }}
-            onSelectionChange={({ nodes: selectedNodes, edges: selectedEdges }) => {
-              setSelectedNodeId(selectedNodes[0]?.id ?? null)
-              setSelectedEdgeId(selectedEdges[0]?.id ?? null)
+              clearSelection()
             }}
             fitView
           >
@@ -489,6 +845,11 @@ function CanvasWorkspace() {
               />
               Show summary
             </label>
+            {selectedNode.data.summaryFlag && (
+              <p className="panel-hint">
+                The test run will add a final summary line using this end message.
+              </p>
+            )}
           </div>
         )}
 
@@ -502,6 +863,34 @@ function CanvasWorkspace() {
           <p className="panel-hint">
             Step label: {getNodeLabel(selectedNode.data)}
           </p>
+        )}
+
+        {selectedNode && validationPreview.nodeErrors[selectedNode.id]?.length ? (
+          <ul className="error-list compact-list">
+            {validationPreview.nodeErrors[selectedNode.id].map((error) => (
+              <li key={error}>{error}</li>
+            ))}
+          </ul>
+        ) : null}
+
+        {selectedNode && (
+          <div className="history-panel">
+            <div className="sandbox-header">
+              <h3>Version history</h3>
+              <button type="button" onClick={saveSelectedNodeVersion}>
+                Save version
+              </button>
+            </div>
+            <ul className="history-list">
+              {selectedNodeHistory.slice().reverse().map((entry) => (
+                <li key={`${entry.timestamp}-${entry.summary}`}>
+                  <strong>{entry.summary}</strong>
+                  <span>{entry.label}</span>
+                  <small>{entry.timestamp}</small>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <div className="sandbox-panel">
@@ -531,6 +920,25 @@ function CanvasWorkspace() {
               ))}
             </ol>
           )}
+
+          <div className="import-export-panel">
+            <h3>JSON</h3>
+            <div className="toolbar-actions">
+              <button type="button" onClick={exportWorkflowJson} disabled={nodes.length === 0}>
+                Export
+              </button>
+              <button type="button" onClick={importWorkflowJson} disabled={!importExportText.trim()}>
+                Import
+              </button>
+            </div>
+            <textarea
+              value={importExportText}
+              onChange={(event) => setImportExportText(event.target.value)}
+              className="json-box"
+              placeholder="Exported workflow JSON will appear here."
+            />
+            {importError && <p className="validation-error">{importError}</p>}
+          </div>
         </div>
       </aside>
     </div>

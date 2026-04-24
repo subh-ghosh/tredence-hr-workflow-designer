@@ -45,6 +45,11 @@
   font-size: 1rem;
 }
 
+.section-title {
+  margin: 18px 0 8px;
+  font-size: 0.95rem;
+}
+
 .panel-canvas {
   min-height: 420px;
 }
@@ -85,6 +90,12 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 10px;
+}
+
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .canvas-toolbar button {
@@ -156,6 +167,10 @@
   font-size: 0.88rem;
 }
 
+.compact-list {
+  margin-top: 10px;
+}
+
 .sandbox-panel {
   margin-top: 20px;
   padding-top: 16px;
@@ -191,6 +206,54 @@
 
 .error-list {
   color: #b91c1c;
+}
+
+.history-panel {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.history-panel h3,
+.import-export-panel h3 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+}
+
+.history-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  color: #334155;
+}
+
+.history-list li {
+  display: grid;
+  gap: 2px;
+}
+
+.history-list span,
+.history-list small {
+  color: #64748b;
+}
+
+.import-export-panel {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.json-box {
+  width: 100%;
+  min-height: 150px;
+  margin-top: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  resize: vertical;
+  font: inherit;
 }
 
 @media (max-width: 1024px) {

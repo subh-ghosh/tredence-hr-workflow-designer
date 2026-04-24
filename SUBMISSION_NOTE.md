@@ -3,11 +3,15 @@
 GitHub repo:
 - https://github.com/subh-ghosh/tredence-hr-workflow-designer
 
+Live demo:
+- https://tredence-hr-workflow-designer-one.vercel.app/
+
 What I built:
 - A React + TypeScript + React Flow HR Workflow Designer prototype
 - Supports Start, Task, Approval, Automated, and End steps
 - Includes step editing forms, local mock API integration, validation, and a workflow test panel
 - Built incrementally with unit tests after each major step, followed by integration and final system verification
+- Includes bonus features: Export/Import JSON, node templates, Undo/Redo, auto-layout, visual node validation, and lightweight node version history
 
 Architecture highlights:
 - Canvas and main UI in `frontend/src/App.tsx`
@@ -24,11 +28,6 @@ What I intentionally kept simple:
 - Default React Flow node renderer instead of a fully custom node card UI
 - No persistence/auth because the case study explicitly did not require them
 
-Optional demo/deployment path:
-- The frontend can be deployed directly on Vercel by setting the project root to `frontend`, with build command `npm run build` and output directory `dist`
-
 What I would add with more time:
 - Custom node UI cards
-- Import/export JSON
-- Undo/redo
 - Full browser E2E automation

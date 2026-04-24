@@ -38,4 +38,21 @@ describe('mock API', () => {
       simulateWorkflow({ nodes: [], edges: [] }, { shouldFail: true }),
     ).rejects.toThrow('Simulation failed')
   })
+
+  it('adds a final summary log when end summary is enabled', async () => {
+    const start = addWorkflowNode('node_1', { x: 0, y: 0 }, getDefaultNodeData('start'))
+    const end = addWorkflowNode('node_2', { x: 100, y: 0 }, {
+      ...getDefaultNodeData('end'),
+      endMessage: 'Workflow complete',
+      summaryFlag: true,
+    })
+
+    const result = await simulateWorkflow({
+      nodes: [start, end],
+      edges: [{ id: 'e1', source: 'node_1', target: 'node_2' }],
+    })
+
+    expect(result.steps).toHaveLength(3)
+    expect(result.steps[2].message).toBe('Summary: Workflow complete')
+  })
 })

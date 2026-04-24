@@ -1,15 +1,32 @@
 import type { Edge, Node } from 'reactflow'
 import { getNodeLabel, type WorkflowData } from './graphState'
 
+export type ValidationResult = {
+  errors: string[]
+  nodeErrors: Record<string, string[]>
+}
+
 export function validateWorkflow(
   nodes: Node<WorkflowData>[],
   edges: Edge[],
 ): string[] {
+  return validateWorkflowDetailed(nodes, edges).errors
+}
+
+export function validateWorkflowDetailed(
+  nodes: Node<WorkflowData>[],
+  edges: Edge[],
+): ValidationResult {
   const errors: string[] = []
+  const nodeErrors: Record<string, string[]> = {}
+
+  function addNodeError(nodeId: string, message: string) {
+    nodeErrors[nodeId] = [...(nodeErrors[nodeId] ?? []), message]
+  }
 
   if (nodes.length === 0) {
     errors.push('Add at least one node.')
-    return errors
+    return { errors, nodeErrors }
   }
 
   const startNodes = nodes.filter((node) => node.data.nodeType === 'start')
@@ -34,23 +51,39 @@ export function validateWorkflow(
     if (!counts) continue
 
     if (node.data.nodeType === 'start' && counts.incoming > 0) {
-      errors.push('Start node must be first.')
+      const message = 'Start node must be first.'
+      errors.push(message)
+      addNodeError(node.id, message)
     }
 
     if (node.data.nodeType !== 'end' && counts.outgoing === 0) {
-      errors.push(`${getNodeLabel(node.data)} is missing a next step.`)
+      const message = `${getNodeLabel(node.data)} is missing a next step.`
+      errors.push(message)
+      addNodeError(node.id, message)
+    }
+
+    if (node.data.nodeType !== 'end' && counts.outgoing > 1) {
+      const message = `${getNodeLabel(node.data)} can only connect to one next step.`
+      errors.push(message)
+      addNodeError(node.id, message)
     }
 
     if (node.data.nodeType !== 'start' && counts.incoming === 0) {
-      errors.push(`${getNodeLabel(node.data)} is not connected from a previous step.`)
+      const message = `${getNodeLabel(node.data)} is not connected from a previous step.`
+      errors.push(message)
+      addNodeError(node.id, message)
     }
   }
 
   if (hasCycle(nodes, edges)) {
-    errors.push('Workflow cannot contain cycles.')
+    const message = 'Workflow cannot contain cycles.'
+    errors.push(message)
+    for (const node of nodes) {
+      addNodeError(node.id, message)
+    }
   }
 
-  return errors
+  return { errors, nodeErrors }
 }
 
 export function hasCycle(

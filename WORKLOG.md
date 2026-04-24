@@ -148,11 +148,20 @@ Purpose: Track everything done during this case study build.
 - Updated README with assumptions and a clearer completed-vs-next section for submission.
 - Added a reusable submission note with repo summary, architecture highlights, tricky bug solved, and optional Vercel deployment guidance.
 
+#### 16. Optional Features & Bug Fixes
+- Fixed an async state closure bug affecting the history pushing logic, restoring `Undo/Redo` functionality to the Start Node and all node editing actions.
+- Completed and polished all requested "Bonus" options from the PDF: Export/Import workflow as JSON, Node templates, Undo/Redo, Mini-map/Zoom controls, Visual node validation errors, Auto-layout, and Node version history.
+- Re-ran:
+	- unit tests
+	- production build
+	- lint
+- Updated README, submission note, and test log to reflect the optional features and live demo link.
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
 ## Next Planned Steps
-- Repository is ready for submission.
+- Repository and live demo are ready for submission.
 
 ## How To Use This Log
 - Add one entry per meaningful change.
