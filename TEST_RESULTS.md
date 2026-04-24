@@ -35,19 +35,25 @@ Decision:
 ---
 
 ## Increment 2 - Canvas Actions
-Date/Time: pending
+Date/Time: 2026-04-24
 
 Commands run:
-- pending
+- npm run test:run (in frontend)
+- npm run build (in frontend)
 
 Results:
-- pending
+- Unit tests: 7 passed, 0 failed
+- Build: pass
 
 Defects found:
-- pending
+- Test environment missing ResizeObserver for React Flow in JSDOM
+- Fixed by adding ResizeObserver mock in frontend/src/test/setup.ts
+- Type issues found during build (ReactFlow types and node state generics)
+- Fixed by tightening TS types in App and workflow helper tests
 
 Decision:
-- pending
+- PASS for Increment 2 gate
+- Proceed to Increment 3
 
 ---
 

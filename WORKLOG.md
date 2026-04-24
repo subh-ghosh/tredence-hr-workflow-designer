@@ -71,11 +71,22 @@ Purpose: Track everything done during this case study build.
 - Added evidence policy requiring recorded result entry for each increment.
 - Added dedicated TEST_RESULTS.md file with structured sections for each increment, integration, and system testing.
 
+#### 10. Increment 2 Implementation (Canvas Actions)
+- Implemented React Flow canvas in frontend shell.
+- Added drag-and-drop node creation from sidebar.
+- Added edge connection support.
+- Added selection tracking for node/edge and delete selection action.
+- Added graph helper module for state operations.
+- Added unit tests for add/connect/delete behavior in graph state helpers.
+- Fixed React Flow test runtime dependency by mocking ResizeObserver in test setup.
+- Verified gates:
+	- Unit tests passed (7/7)
+	- Build passed
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
 ## Next Planned Steps
-- Increment 2: implement canvas actions and unit test state updates.
 - Increment 3: implement node forms and unit test form behavior.
 - Increment 4: add API layer and unit test service behavior.
 - Increment 5: add validation/sandbox and unit test validators.
