@@ -10,6 +10,31 @@ Ship features in small steps with confidence.
 - Run integration tests after all increments are complete.
 - Run system tests as final quality gate.
 
+## Test standards
+- Test naming:
+  - Use clear behavior names (example: "adds edge when two nodes are connected").
+- Test style:
+  - Follow Arrange -> Act -> Assert in each test.
+- Isolation:
+  - Tests must not depend on order.
+  - Cleanup after each test case.
+- Determinism:
+  - No network calls in unit tests unless mocked.
+  - Freeze or mock time when needed.
+- Scope discipline:
+  - Unit tests: one module/component behavior at a time.
+  - Integration tests: module handoff behavior.
+  - System tests: full user journey.
+
+## Required commands
+- Unit tests: `npm run test:run`
+- Unit tests watch mode: `npm run test`
+- Build check: `npm run build`
+
+Run policy:
+- For each increment, run unit tests + build before closing increment.
+- Before release/integration phase, run full test suite and build again.
+
 ## Increments and tests
 
 ### Increment 1: App shell
@@ -89,3 +114,13 @@ Unit tests:
 - Integration tests pass
 - System tests pass
 - No blocking bugs in main user flow
+
+## Evidence policy
+For each increment, capture results in TEST_RESULTS.md with:
+- Date/time
+- Increment ID
+- Commands executed
+- Pass/fail summary
+- Known issues and next action
+
+No increment is considered complete without a result entry.

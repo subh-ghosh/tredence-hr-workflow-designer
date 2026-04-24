@@ -52,11 +52,29 @@ Purpose: Track everything done during this case study build.
 - Added final system test phase for full user-flow verification.
 - Added dedicated test strategy document.
 
+#### 8. Increment 1 Implementation (Frontend Folder)
+- Restored repo to last stable commit after accidental root scaffold.
+- Created dedicated frontend project in frontend/ using Vite + React + TypeScript.
+- Installed core dependencies including React Flow.
+- Added Vitest + React Testing Library setup.
+- Implemented Increment 1 shell UI with three panels:
+	- Node palette (left)
+	- Canvas placeholder (center)
+	- Details/Sandbox placeholder (right)
+- Added baseline unit tests for shell rendering.
+- Fixed test isolation via cleanup hook in test setup.
+- Verified Increment 1 test run: 2 tests passed.
+
+#### 9. Test Governance and Result Tracking
+- Strengthened test strategy with standards (naming, isolation, determinism, scope).
+- Added required test commands and increment-level run policy.
+- Added evidence policy requiring recorded result entry for each increment.
+- Added dedicated TEST_RESULTS.md file with structured sections for each increment, integration, and system testing.
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
 ## Next Planned Steps
-- Increment 1: scaffold app and unit test layout shell.
 - Increment 2: implement canvas actions and unit test state updates.
 - Increment 3: implement node forms and unit test form behavior.
 - Increment 4: add API layer and unit test service behavior.
