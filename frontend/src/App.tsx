@@ -21,11 +21,6 @@ import {
   getNodeLabel,
   updateWorkflowNode,
   validateTaskTitle,
-  type ApprovalNodeData,
-  type AutomatedNodeData,
-  type EndNodeData,
-  type StartNodeData,
-  type TaskNodeData,
   type WorkflowData,
   type WorkflowNodeType,
 } from './workflow/graphState'
@@ -117,6 +112,13 @@ function CanvasWorkspace() {
     [selectedNodeId, setNodes],
   )
 
+  const patchSelectedNode = useCallback(
+    (patch: Partial<WorkflowData>) => {
+      updateSelectedNode((data) => ({ ...data, ...patch }))
+    },
+    [updateSelectedNode],
+  )
+
   return (
     <div className="panels">
       <aside className="panel" data-testid="panel-sidebar" aria-label="Node palette">
@@ -175,41 +177,31 @@ function CanvasWorkspace() {
             <label>
               Start title
               <input
-                value={(selectedNode.data as StartNodeData).startTitle}
+                value={selectedNode.data.startTitle ?? ''}
                 onChange={(event) => {
-                  const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'start') return data
-                    return { ...data, startTitle: value }
-                  })
+                  patchSelectedNode({ startTitle: event.target.value })
                 }}
               />
             </label>
             <label>
               Metadata key
               <input
-                value={(selectedNode.data as StartNodeData).metadata[0]?.key ?? ''}
+                value={selectedNode.data.metadata?.[0]?.key ?? ''}
                 onChange={(event) => {
                   const nextKey = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'start') return data
-                    const first = data.metadata[0] ?? { key: '', value: '' }
-                    return { ...data, metadata: [{ ...first, key: nextKey }] }
-                  })
+                  const first = selectedNode.data.metadata?.[0] ?? { key: '', value: '' }
+                  patchSelectedNode({ metadata: [{ ...first, key: nextKey }] })
                 }}
               />
             </label>
             <label>
               Metadata value
               <input
-                value={(selectedNode.data as StartNodeData).metadata[0]?.value ?? ''}
+                value={selectedNode.data.metadata?.[0]?.value ?? ''}
                 onChange={(event) => {
                   const nextValue = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'start') return data
-                    const first = data.metadata[0] ?? { key: '', value: '' }
-                    return { ...data, metadata: [{ ...first, value: nextValue }] }
-                  })
+                  const first = selectedNode.data.metadata?.[0] ?? { key: '', value: '' }
+                  patchSelectedNode({ metadata: [{ ...first, value: nextValue }] })
                 }}
               />
             </label>
@@ -221,52 +213,36 @@ function CanvasWorkspace() {
             <label>
               Title (required)
               <input
-                value={(selectedNode.data as TaskNodeData).title}
+                value={selectedNode.data.title ?? ''}
                 onChange={(event) => {
-                  const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'task') return data
-                    return { ...data, title: value }
-                  })
+                  patchSelectedNode({ title: event.target.value })
                 }}
               />
             </label>
             <label>
               Description
               <input
-                value={(selectedNode.data as TaskNodeData).description}
+                value={selectedNode.data.description ?? ''}
                 onChange={(event) => {
-                  const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'task') return data
-                    return { ...data, description: value }
-                  })
+                  patchSelectedNode({ description: event.target.value })
                 }}
               />
             </label>
             <label>
               Assignee
               <input
-                value={(selectedNode.data as TaskNodeData).assignee}
+                value={selectedNode.data.assignee ?? ''}
                 onChange={(event) => {
-                  const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'task') return data
-                    return { ...data, assignee: value }
-                  })
+                  patchSelectedNode({ assignee: event.target.value })
                 }}
               />
             </label>
             <label>
               Due date
               <input
-                value={(selectedNode.data as TaskNodeData).dueDate}
+                value={selectedNode.data.dueDate ?? ''}
                 onChange={(event) => {
-                  const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'task') return data
-                    return { ...data, dueDate: value }
-                  })
+                  patchSelectedNode({ dueDate: event.target.value })
                 }}
               />
             </label>
@@ -278,26 +254,18 @@ function CanvasWorkspace() {
             <label>
               Title
               <input
-                value={(selectedNode.data as ApprovalNodeData).title}
+                value={selectedNode.data.title ?? ''}
                 onChange={(event) => {
-                  const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'approval') return data
-                    return { ...data, title: value }
-                  })
+                  patchSelectedNode({ title: event.target.value })
                 }}
               />
             </label>
             <label>
               Approver role
               <input
-                value={(selectedNode.data as ApprovalNodeData).approverRole}
+                value={selectedNode.data.approverRole ?? ''}
                 onChange={(event) => {
-                  const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'approval') return data
-                    return { ...data, approverRole: value }
-                  })
+                  patchSelectedNode({ approverRole: event.target.value })
                 }}
               />
             </label>
@@ -305,13 +273,9 @@ function CanvasWorkspace() {
               Auto-approve threshold
               <input
                 type="number"
-                value={(selectedNode.data as ApprovalNodeData).autoApproveThreshold}
+                value={selectedNode.data.autoApproveThreshold ?? 0}
                 onChange={(event) => {
-                  const value = Number(event.target.value || 0)
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'approval') return data
-                    return { ...data, autoApproveThreshold: value }
-                  })
+                  patchSelectedNode({ autoApproveThreshold: Number(event.target.value || 0) })
                 }}
               />
             </label>
@@ -323,39 +287,28 @@ function CanvasWorkspace() {
             <label>
               Title
               <input
-                value={(selectedNode.data as AutomatedNodeData).title}
+                value={selectedNode.data.title ?? ''}
                 onChange={(event) => {
-                  const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'automated') return data
-                    return { ...data, title: value }
-                  })
+                  patchSelectedNode({ title: event.target.value })
                 }}
               />
             </label>
             <label>
               Action Id
               <input
-                value={(selectedNode.data as AutomatedNodeData).actionId}
+                value={selectedNode.data.actionId ?? ''}
                 onChange={(event) => {
-                  const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'automated') return data
-                    return { ...data, actionId: value }
-                  })
+                  patchSelectedNode({ actionId: event.target.value })
                 }}
               />
             </label>
             <label>
               Param value
               <input
-                value={(selectedNode.data as AutomatedNodeData).actionParams.value ?? ''}
+                value={selectedNode.data.actionParams?.value ?? ''}
                 onChange={(event) => {
                   const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'automated') return data
-                    return { ...data, actionParams: { ...data.actionParams, value } }
-                  })
+                  patchSelectedNode({ actionParams: { ...(selectedNode.data.actionParams ?? {}), value } })
                 }}
               />
             </label>
@@ -367,26 +320,18 @@ function CanvasWorkspace() {
             <label>
               End message
               <input
-                value={(selectedNode.data as EndNodeData).endMessage}
+                value={selectedNode.data.endMessage ?? ''}
                 onChange={(event) => {
-                  const value = event.target.value
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'end') return data
-                    return { ...data, endMessage: value }
-                  })
+                  patchSelectedNode({ endMessage: event.target.value })
                 }}
               />
             </label>
             <label className="checkbox-row">
               <input
                 type="checkbox"
-                checked={(selectedNode.data as EndNodeData).summaryFlag}
+                checked={selectedNode.data.summaryFlag ?? false}
                 onChange={(event) => {
-                  const checked = event.target.checked
-                  updateSelectedNode((data) => {
-                    if (data.nodeType !== 'end') return data
-                    return { ...data, summaryFlag: checked }
-                  })
+                  patchSelectedNode({ summaryFlag: event.target.checked })
                 }}
               />
               Summary flag
