@@ -81,7 +81,7 @@ export function addWorkflowNode(
 ): Node<WorkflowData> {
     return {
         id,
-        type: 'default',
+        type: 'workflow',
         position,
         data: {
             ...data,

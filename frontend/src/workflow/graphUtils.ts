@@ -39,7 +39,7 @@ export function createTemplateNode(
 ): Node<WorkflowData> {
   return normalizeWorkflowNode({
     id,
-    type: 'default',
+    type: 'workflow',
     position,
     data: template.data,
   })
@@ -70,7 +70,7 @@ export function normalizeWorkflowNode(node: Node<WorkflowData>): Node<WorkflowDa
 
   return {
     ...node,
-    type: node.type ?? 'default',
+    type: 'workflow',
     position: node.position ?? { x: 0, y: 0 },
     data: {
       ...normalizedData,

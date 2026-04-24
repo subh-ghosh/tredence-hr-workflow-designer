@@ -5,14 +5,19 @@ import ReactFlow, {
   applyNodeChanges,
   Background,
   Controls,
+  Handle,
+  MarkerType,
   MiniMap,
+  Position,
   ReactFlowProvider,
   type Connection,
   type Edge,
   type EdgeChange,
   type Node,
   type NodeChange,
+  type NodeProps,
   type ReactFlowInstance,
+  type Viewport,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import './App.css'
@@ -62,6 +67,64 @@ const NODE_TYPES: WorkflowNodeType[] = [
   'end',
 ]
 
+function getNodeTone(nodeType: WorkflowNodeType): {
+  label: string
+  helper: string
+  className: string
+} {
+  if (nodeType === 'start') {
+    return {
+      label: 'Start',
+      helper: 'Entry point',
+      className: 'workflow-card-start',
+    }
+  }
+
+  if (nodeType === 'task') {
+    return {
+      label: 'Task',
+      helper: 'Human action',
+      className: 'workflow-card-task',
+    }
+  }
+
+  if (nodeType === 'approval') {
+    return {
+      label: 'Approval',
+      helper: 'Decision point',
+      className: 'workflow-card-approval',
+    }
+  }
+
+  if (nodeType === 'automated') {
+    return {
+      label: 'Automation',
+      helper: 'System action',
+      className: 'workflow-card-automated',
+    }
+  }
+
+  return {
+    label: 'End',
+    helper: 'Final outcome',
+    className: 'workflow-card-end',
+  }
+}
+
+function WorkflowCardNode({ data, selected }: NodeProps<WorkflowData>) {
+  const tone = getNodeTone(data.nodeType)
+
+  return (
+    <div className={`workflow-card ${tone.className} ${selected ? 'is-selected' : ''}`}>
+      <Handle type="target" position={Position.Top} className="workflow-handle" />
+      <div className="workflow-card-kicker">{tone.label}</div>
+      <div className="workflow-card-title">{getNodeLabel(data)}</div>
+      <div className="workflow-card-helper">{tone.helper}</div>
+      <Handle type="source" position={Position.Bottom} className="workflow-handle" />
+    </div>
+  )
+}
+
 function createVersionEntry(data: WorkflowData, summary: string): VersionEntry {
   return {
     createdAt: Date.now(),
@@ -80,13 +143,8 @@ function buildNodeStyles(
 
     return {
       ...node,
-      style: hasError
-        ? {
-            ...node.style,
-            border: '2px solid #dc2626',
-            background: '#fef2f2',
-          }
-        : undefined,
+      className: hasError ? 'workflow-node-has-error' : undefined,
+      style: undefined,
     }
   })
 }
@@ -126,6 +184,7 @@ function CanvasWorkspace() {
   const [history, setHistory] = useState(createHistory)
   const [nodeVersions, setNodeVersions] = useState<NodeVersions>({})
   const [graphRenderKey, setGraphRenderKey] = useState(0)
+  const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, zoom: 1 })
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
   const [automations, setAutomations] = useState<AutomationAction[]>([])
@@ -136,6 +195,7 @@ function CanvasWorkspace() {
   const [simulationLoading, setSimulationLoading] = useState(false)
   const [importExportText, setImportExportText] = useState('')
   const [importError, setImportError] = useState('')
+  const nodeTypes = useMemo(() => ({ workflow: WorkflowCardNode }), [])
 
   const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
@@ -537,19 +597,37 @@ function CanvasWorkspace() {
   return (
     <div className="panels">
       <aside className="panel" data-testid="panel-sidebar" aria-label="Node palette">
-        <h2>Steps</h2>
-        <p className="panel-hint">Drag a step into the canvas.</p>
+        <div className="panel-heading">
+          <div>
+            <span className="eyebrow">1. Pick A Step</span>
+            <h2>Workflow building blocks</h2>
+          </div>
+          <span className="panel-badge">Drag & drop</span>
+        </div>
+        <p className="panel-hint">
+          Start with a <strong>Start</strong> step, add the work in the middle, and finish
+          with an <strong>End</strong> step.
+        </p>
         <ul className="node-list">
           {NODE_TYPES.map((nodeType) => (
             <li key={nodeType}>
               <button type="button" className="node-chip" draggable onDragStart={(event) => onDragStart(event, nodeType)}>
-                {nodeType}
+                <span className="node-chip-title">{nodeType}</span>
+                <span className="node-chip-copy">
+                  {nodeType === 'start' && 'Where the workflow begins'}
+                  {nodeType === 'task' && 'A human task someone completes'}
+                  {nodeType === 'approval' && 'A decision or sign-off step'}
+                  {nodeType === 'automated' && 'A system action triggered automatically'}
+                  {nodeType === 'end' && 'How the workflow finishes'}
+                </span>
               </button>
             </li>
           ))}
         </ul>
-        <h3 className="section-title">Templates</h3>
-        <p className="panel-hint">Drag a ready-made step into the canvas.</p>
+        <h3 className="section-title">Quick-start templates</h3>
+        <p className="panel-hint">
+          Use these if you want a pre-filled example instead of starting from a blank step.
+        </p>
         <ul className="node-list">
           {WORKFLOW_TEMPLATES.map((template) => (
             <li key={template.id}>
@@ -559,7 +637,8 @@ function CanvasWorkspace() {
                 draggable
                 onDragStart={(event) => onTemplateDragStart(event, template.id)}
               >
-                {template.label}
+                <span className="node-chip-title">{template.label}</span>
+                <span className="node-chip-copy">Ready-made content you can edit later</span>
               </button>
             </li>
           ))}
@@ -567,8 +646,23 @@ function CanvasWorkspace() {
       </aside>
 
       <main className="panel panel-canvas" data-testid="panel-canvas" aria-label="Workflow canvas area">
+        <div className="canvas-header">
+          <div>
+            <span className="eyebrow">2. Arrange The Flow</span>
+            <h2>Workflow canvas</h2>
+          </div>
+        </div>
+        <div className="canvas-intro">
+          <div className="canvas-tip">
+            <strong>How to use it:</strong> drag steps from the left, connect them in order,
+            then click any step to configure it.
+          </div>
+          <div className="canvas-tip subtle">
+            Tip: Use <strong>Auto-layout</strong> after adding a few steps to clean up the
+            diagram.
+          </div>
+        </div>
         <div className="canvas-toolbar">
-          <h2>Workflow</h2>
           <div className="toolbar-actions">
             <button type="button" onClick={undo} disabled={history.past.length === 0}>
               Undo
@@ -590,10 +684,29 @@ function CanvasWorkspace() {
             key={graphRenderKey}
             nodes={displayNodes}
             edges={edges}
+            nodeTypes={nodeTypes}
+            defaultViewport={viewport}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onInit={setReactFlowInstance}
+            onMoveEnd={(_, nextViewport) => {
+              setViewport(nextViewport)
+            }}
+            defaultEdgeOptions={{
+              type: 'smoothstep',
+              animated: true,
+              markerEnd: {
+                type: MarkerType.ArrowClosed,
+                width: 18,
+                height: 18,
+                color: '#235b9c',
+              },
+              style: {
+                stroke: '#235b9c',
+                strokeWidth: 2.2,
+              },
+            }}
             onNodeClick={(_, node) => {
               setSelectedNodeId(node.id)
               setSelectedEdgeId(null)
@@ -605,21 +718,38 @@ function CanvasWorkspace() {
             onPaneClick={() => {
               clearSelection()
             }}
-            fitView
           >
-            <MiniMap />
+            <MiniMap
+              pannable
+              zoomable
+              nodeStrokeColor="#14365f"
+              nodeColor="#f5f9ff"
+              maskColor="rgba(15, 23, 42, 0.08)"
+            />
             <Controls />
-            <Background />
+            <Background color="#c2d3e8" gap={28} size={1.35} />
           </ReactFlow>
         </div>
       </main>
 
       <aside className="panel" data-testid="panel-details" aria-label="Node details panel">
-        <h2>Details</h2>
-        <p>{panelTitle}</p>
+        <div className="panel-heading">
+          <div>
+            <span className="eyebrow">3. Configure And Test</span>
+            <h2>Step details</h2>
+          </div>
+          {selectedNode ? <span className="panel-badge">Editing</span> : null}
+        </div>
+        <p className="panel-status">{panelTitle}</p>
 
         {!selectedNode && (
-          <p className="panel-hint">Click a step to edit it.</p>
+          <div className="empty-state-card">
+            <strong>No step selected yet</strong>
+            <p className="panel-hint">
+              Click any step on the canvas to edit its fields, review errors, and test the
+              full flow.
+            </p>
+          </div>
         )}
 
         {selectedNode && selectedNode.data.nodeType === 'start' && (
@@ -860,9 +990,11 @@ function CanvasWorkspace() {
         )}
 
         {selectedNode && (
-          <p className="panel-hint">
-            Step label: {getNodeLabel(selectedNode.data)}
-          </p>
+          <div className="info-card">
+            <strong>Live label</strong>
+            <p className="panel-hint">This is the name people will see on the workflow map.</p>
+            <p className="info-emphasis">{getNodeLabel(selectedNode.data)}</p>
+          </div>
         )}
 
         {selectedNode && validationPreview.nodeErrors[selectedNode.id]?.length ? (
@@ -895,13 +1027,14 @@ function CanvasWorkspace() {
 
         <div className="sandbox-panel">
           <div className="sandbox-header">
-            <h3>Test</h3>
+            <div>
+              <h3>Test the workflow</h3>
+              <p className="panel-hint">Run a quick check to validate the flow and preview the execution log.</p>
+            </div>
             <button type="button" onClick={runSimulation} disabled={simulationLoading}>
-              {simulationLoading ? 'Running...' : 'Run'}
+              {simulationLoading ? 'Running...' : 'Run test'}
             </button>
           </div>
-
-          <p className="panel-hint">Check the flow and run a test.</p>
 
           {simulationErrors.length > 0 && (
             <ul className="error-list" data-testid="simulation-errors">
@@ -922,20 +1055,23 @@ function CanvasWorkspace() {
           )}
 
           <div className="import-export-panel">
-            <h3>JSON</h3>
+            <h3>Import or export workflow JSON</h3>
+            <p className="panel-hint">
+              Export your current workflow for backup or reuse, or paste valid workflow JSON to import it.
+            </p>
             <div className="toolbar-actions">
               <button type="button" onClick={exportWorkflowJson} disabled={nodes.length === 0}>
-                Export
+                Export JSON
               </button>
               <button type="button" onClick={importWorkflowJson} disabled={!importExportText.trim()}>
-                Import
+                Import JSON
               </button>
             </div>
             <textarea
               value={importExportText}
               onChange={(event) => setImportExportText(event.target.value)}
               className="json-box"
-              placeholder="Exported workflow JSON will appear here."
+              placeholder="Your workflow JSON will appear here. You can also paste JSON here and import it."
             />
             {importError && <p className="validation-error">{importError}</p>}
           </div>
@@ -949,8 +1085,28 @@ function App() {
   return (
     <div className="app-shell">
       <header className="top-bar">
-        <h1>HR Workflow Designer</h1>
-        <p>Build and test a simple HR workflow.</p>
+        <div className="hero-copy">
+          <span className="hero-kicker">Visual workflow builder</span>
+          <h1>HR Workflow Designer</h1>
+          <p>
+            Create, explain, and test people-process workflows with a guided visual editor.
+            This interface is designed to be easy for first-time users, not just for the case study.
+          </p>
+          <div className="hero-steps" aria-label="How to use the app">
+            <span>1. Add steps</span>
+            <span>2. Connect the flow</span>
+            <span>3. Fill details</span>
+            <span>4. Run a test</span>
+          </div>
+        </div>
+        <div className="hero-card">
+          <div className="hero-card-label">What you can do here</div>
+          <ul className="hero-checklist">
+            <li>Build onboarding, approvals, and automated HR flows</li>
+            <li>Catch missing steps and broken connections early</li>
+            <li>Reuse templates, export JSON, and review saved versions</li>
+          </ul>
+        </div>
       </header>
       <ReactFlowProvider>
         <CanvasWorkspace />

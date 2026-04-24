@@ -1,9 +1,9 @@
 :root {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Trebuchet MS', 'Avenir Next', 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: #0f172a;
-  background-color: #f8fafc;
+  background-color: #f4f1ea;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -17,6 +17,8 @@
 body {
   margin: 0;
   min-width: 320px;
+  background:
+    linear-gradient(180deg, #f3efe7 0%, #eef4fb 42%, #f8fafc 100%);
 }
 
 #root {
