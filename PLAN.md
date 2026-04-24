@@ -15,7 +15,8 @@ Finish all must-have features in the timebox.
 3. Build node forms
 4. Add mock APIs
 5. Add validation + simulation panel
-6. Clean up docs and final checks
+6. Add optional upgrades
+7. Clean up docs and final checks
 
 ## Increment plan with tests
 
@@ -59,6 +60,15 @@ Finish all must-have features in the timebox.
 - System tests:
 	- full user flow from empty canvas to valid simulation
 	- invalid workflow flow showing clear errors
+
+### Optional upgrades
+- Export/Import JSON
+- Node templates
+- Undo/Redo
+- Mini-map and zoom controls
+- Visual validation on nodes
+- Auto-layout
+- Node version history
 
 ## Milestones
 
@@ -125,4 +135,4 @@ Done when:
 - Trigger validation error on invalid graph
 
 ## Status
-Implementation and final verification are complete.
+Implementation, optional upgrades, and final verification are complete.

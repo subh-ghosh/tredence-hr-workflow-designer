@@ -114,6 +114,7 @@ Unit tests:
 - Integration tests pass
 - System tests pass
 - No blocking bugs in main user flow
+- Final optional feature verification is recorded when bonus features are added
 
 ## Evidence policy
 For each increment, capture results in TEST_RESULTS.md with:
@@ -124,3 +125,7 @@ For each increment, capture results in TEST_RESULTS.md with:
 - Known issues and next action
 
 No increment is considered complete without a result entry.
+
+## Current final state
+- Full suite verification completed
+- Latest recorded result: `34` tests passed, build passed, lint passed

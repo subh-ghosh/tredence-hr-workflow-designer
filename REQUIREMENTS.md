@@ -119,6 +119,7 @@ Done when:
 
 ## Definition of done
 - All required features (FR-1 to FR-5) work
+- Optional upgrades are complete where implemented and documented
 - App runs locally
 - No TypeScript errors
 - Unit tests pass for each completed increment
@@ -128,10 +129,23 @@ Done when:
 
 ## Submission checklist
 - GitHub repo link
+- Live demo link
 - Complete source code
 - README
+- Submission note
+- Test results log
 - Work log
 - Diagram PNGs in assets/diagrams
+
+## Bonus status
+Implemented bonus items:
+- Export/Import JSON
+- Node templates
+- Undo/Redo
+- Mini-map and zoom controls
+- Visual validation errors on nodes
+- Auto-layout
+- Node version history
 
 ## Testing approach (incremental)
 - Build feature in small increment.

@@ -146,7 +146,7 @@ Purpose: Track everything done during this case study build.
 	- production build
 	- lint
 - Updated README with assumptions and a clearer completed-vs-next section for submission.
-- Added a reusable submission note with repo summary, architecture highlights, tricky bug solved, and optional Vercel deployment guidance.
+- Added a reusable submission note with repo summary, architecture highlights, tricky bug solved, and final submission links.
 
 #### 16. Optional Features & Bug Fixes
 - Fixed an async state closure bug affecting the history pushing logic, restoring `Undo/Redo` functionality to the Start Node and all node editing actions.
