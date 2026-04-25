@@ -51,8 +51,8 @@ export function autoLayoutWorkflow(graph: WorkflowGraph): WorkflowGraph {
 
   orderedNodes.forEach((node, index) => {
     positions.set(node.id, {
-      x: 120 + (index % 2) * 240,
-      y: 80 + Math.floor(index / 2) * 140,
+      x: 350,
+      y: 80 + index * 180,
     })
   })
 

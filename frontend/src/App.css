@@ -478,8 +478,9 @@ body.dark .download-btn {
 }
 
 .workflow-card {
-  min-width: 160px;
-  max-width: 180px;
+  width: 175px;
+  min-width: 175px;
+  max-width: 175px;
   padding: 10px 12px 12px;
   border-radius: 18px;
   border: 1px solid rgba(143, 162, 186, 0.24);
@@ -1620,4 +1621,44 @@ body.dark .workflow-has-selection .react-flow__minimap {
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(15, 23, 42, 0.86);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== ON-NODE WARNING BADGE ===== */
+
+@keyframes warning-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  70% { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+.workflow-card-warning {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background-color: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fcd34d;
+  padding: 1px 5px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  animation: warning-pulse 2s infinite;
+  box-shadow: 0 2px 5px rgba(217, 119, 6, 0.15);
+  z-index: 10;
+}
+
+.workflow-card-warning svg {
+  width: 12px;
+  height: 12px;
+}
+
+body.dark .workflow-card-warning,
+.workflow-node-is-muted .workflow-card-warning {
+  background-color: rgba(30, 41, 59, 0.95);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: none;
 }

@@ -129,6 +129,16 @@ function WorkflowCardNode({ data, selected }: NodeProps<WorkflowData>) {
     <div className={`workflow-card ${tone.className} ${selected ? 'is-selected' : ''}`}>
       <Handle type="target" position={Position.Top} className="workflow-handle" />
       <div className="workflow-card-kicker">{tone.label}</div>
+      {data.hasError && (
+        <div className="workflow-card-warning" title={data.errorMessages?.join('\n') || `${data.errorCount} issue(s) detected`}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>{data.errorCount}</span>
+        </div>
+      )}
       <div className="workflow-card-title">{getNodeLabel(data)}</div>
       <div className="workflow-card-helper">{tone.helper}</div>
       <Handle type="source" position={Position.Bottom} className="workflow-handle" />
@@ -171,6 +181,12 @@ function buildNodeStyles(
       ...node,
       className: classNames.join(' ') || undefined,
       style: undefined,
+      data: {
+        ...node.data,
+        hasError,
+        errorCount: nodeErrors[node.id]?.length || 0,
+        errorMessages: nodeErrors[node.id] || [],
+      },
     }
   })
 }
@@ -597,6 +613,53 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
     [commitNodeEdit, selectedNodeId],
   )
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeTag = document.activeElement?.tagName
+      if (
+        activeTag === 'INPUT' ||
+        activeTag === 'TEXTAREA' ||
+        (document.activeElement as HTMLElement)?.isContentEditable
+      ) {
+        return
+      }
+
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
+      const cmdKey = isMac ? e.metaKey : e.ctrlKey
+
+      if (cmdKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault()
+        if (e.shiftKey) {
+          redo()
+        } else {
+          undo()
+        }
+      } else if (cmdKey && e.key.toLowerCase() === 'y') {
+        e.preventDefault()
+        redo()
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedNodeId || selectedEdgeId) {
+          e.preventDefault()
+          deleteSelection()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [undo, redo, deleteSelection, selectedNodeId, selectedEdgeId])
+
+  const getMiniMapColor = useCallback((node: Node<WorkflowData>) => {
+    switch (node.data.nodeType) {
+      case 'start': return '#10b981'
+      case 'task': return '#3b82f6'
+      case 'approval': return '#f59e0b'
+      case 'automated': return '#8b5cf6'
+      case 'end': return '#ef4444'
+      default: return '#94a3b8'
+    }
+  }, [])
+
   const patchSelectedNode = useCallback(
     (patch: Partial<WorkflowData>) => {
       updateSelectedNode((data) => ({ ...data, ...patch }))
@@ -728,7 +791,7 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
 
     // 1. Calculate the bounding box of all nodes
     const nodesBounds = getNodesBounds(nodes)
-    const padding = 100 // 50px padding on each side
+    const padding = 200 // Increased padding for edges that curve outward
     const captureWidth = nodesBounds.width + padding
     const captureHeight = nodesBounds.height + padding
 
@@ -741,8 +804,7 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
       2
     )
 
-    // 3. Select the scalable viewport layer, NOT the entire canvas wrapper,
-    // to strictly prevent massive background memory leaks in html-to-image
+    // 3. Select the scalable viewport layer
     const viewportEl = document.querySelector('.react-flow__viewport') as HTMLElement
     if (!viewportEl) return
 
@@ -750,11 +812,11 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
       backgroundColor: isDarkMode ? '#0b0f19' : '#f8fafc',
       width: captureWidth,
       height: captureHeight,
-      pixelRatio: 2,
+      pixelRatio: isMobile ? 1 : 2,
       style: {
         width: `${captureWidth}px`,
         height: `${captureHeight}px`,
-        transform: `translate(${transform.x + padding / 2}px, ${transform.y + padding / 2}px) scale(${transform.zoom})`,
+        transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.zoom})`,
       },
     }).then((dataUrl) => {
       const link = document.createElement('a')
@@ -764,7 +826,7 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
     }).catch((err) => {
       console.error('Download failed', err)
     })
-  }, [isDarkMode, nodes])
+  }, [isDarkMode, nodes, isMobile])
 
   // Mobile: add a node at center of canvas
   const addNodeAtCenter = useCallback(
@@ -927,6 +989,7 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
           <ReactFlow
             className={selectedNodeId || selectedEdgeId ? 'workflow-has-selection' : undefined}
             key={graphRenderKey}
+            disableKeyboardA11y={true}
             nodes={displayNodes}
             edges={displayEdges}
             nodeTypes={nodeTypes}
@@ -969,7 +1032,7 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
               pannable
               zoomable
               nodeStrokeColor="#14365f"
-              nodeColor="#f5f9ff"
+              nodeColor={getMiniMapColor}
               maskColor="rgba(15, 23, 42, 0.08)"
             />
             <Controls />

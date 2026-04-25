@@ -23,6 +23,9 @@ export type WorkflowData = {
     actionParams?: Record<string, string>
     endMessage?: string
     summaryFlag?: boolean
+    hasError?: boolean
+    errorCount?: number
+    errorMessages?: string[]
 }
 
 export function createNodeId(counter: number): string {
