@@ -136,3 +136,10 @@ Done when:
 
 ## Status
 Implementation, optional upgrades, and final verification are complete.
+
+## Latest updates (2026-04-25)
+- Restored multi-workspace graph tabs over the canvas.
+- Fixed regression in node version history seeding for create/import/sample flows.
+- Synced auto-layout test expectations with the current vertical layout behavior.
+- Added light/dark theme persistence using browser cookies.
+- Refreshed all docs to reflect the latest shipped behavior.

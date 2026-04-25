@@ -225,16 +225,18 @@ Purpose: Track everything done during this case study build.
 	- current mobile UX (Steps/Canvas tabs + node-edit modal)
 
 #### 24. Last 10 Commit Coverage (Docs Traceability)
-- `948eac4` feat(theme): persist light/dark mode via cookies
-- `44c78a3` fix(regressions): preserve version history seeds and align auto-layout tests
-- `20d150e` fix(ui): restore multiple graph tabs over canvas
-- `5138940` feat: restore validation badges, optimize PNG export for mobile/desktop, and implement vertical auto-layout
-- `e9e3847` fix(export): resolve toPng RAM crash by restricting download bounds to node viewport
-- `8c87de4` feat(ui): add premium simulation timeline, colourful chip overrides, PNG graph export, and auto-layout U-shape workflow sample
-- `27f5e85` docs: update README preview screenshots with new light/dark/mobile captures
-- `87b3d78` chore: rebrand to Tredence Analytics HR Workflow Designer across all files
-- `2ce31b8` fix(mobile): add live label, version history, and save version to node edit modal
-- `f377659` feat(mobile): node edit modal, 2-tab nav, canvas-bottom sections, bigger handles, taller canvas
+- Added explicit traceability for the latest 10 commits so docs can be checked against shipped behavior quickly.
+- Logged covered commits:
+	- `948eac4` feat(theme): persist light/dark mode via cookies
+	- `44c78a3` fix(regressions): preserve version history seeds and align auto-layout tests
+	- `20d150e` fix(ui): restore multiple graph tabs over canvas
+	- `5138940` feat: restore validation badges, optimize PNG export for mobile/desktop, and implement vertical auto-layout
+	- `e9e3847` fix(export): resolve toPng RAM crash by restricting download bounds to node viewport
+	- `8c87de4` feat(ui): add premium simulation timeline, colourful chip overrides, PNG graph export, and auto-layout U-shape workflow sample
+	- `27f5e85` docs: update README preview screenshots with new light/dark/mobile captures
+	- `87b3d78` chore: rebrand to Tredence Analytics HR Workflow Designer across all files
+	- `2ce31b8` fix(mobile): add live label, version history, and save version to node edit modal
+	- `f377659` feat(mobile): node edit modal, 2-tab nav, canvas-bottom sections, bigger handles, taller canvas
 
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
