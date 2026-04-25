@@ -178,16 +178,16 @@ Purpose: Track everything done during this case study build.
 
 #### 19. Mobile Responsive Layout
 - Added `isMobile` state in `CanvasWorkspace` with a resize listener (breakpoint: 768px).
-- Added `activeTab` state (`steps | canvas | details`) default `canvas`.
+- Added `activeTab` state (`steps | canvas`) default `canvas`.
 - The `.panels` div receives `.mobile-panels.mobile-tab-{tab}` classes on mobile; only the active panel is visible.
-- Added a fixed `<nav class="mobile-tab-bar">` at the bottom with 3 icon+label tab buttons.
+- Added a fixed `<nav class="mobile-tab-bar">` at the bottom with 2 icon+label tab buttons.
 - Added `addNodeAtCenter(type)` helper: places a node at a random offset near the canvas center and auto-switches to the Canvas tab — used as a touch-friendly alternative to drag-and-drop.
 - Added `+` tap buttons next to each sidebar node chip on mobile.
 - CSS: `@media (max-width: 768px)` block, a `≤380px` block for ultra-small screens, and dark mode overrides for the tab bar.
 - Desktop layout is unaffected (tab bar hidden, node chips behave as before).
 - Fixed canvas surface not rendering on mobile (CSS specificity bug: `.panel-canvas .canvas-surface { flex:1 }` was overriding height; fixed with explicit `flex: none; height: 420px` inside the media query).
 - Added `addTemplateAtCenter(templateId)` helper and `+` tap buttons to Quick-start templates section on mobile.
-- Replaced generic emoji tab icons with clean inline SVG icons matching the app design language (Steps = document, Canvas = node-graph, Details = clock).
+- Replaced generic emoji tab icons with clean inline SVG icons matching the app design language (Steps = document, Canvas = node-graph).
 - Changed `+` tap button color from blue to the app's warm orangish gradient (`#c2461a → #e8843a`) for consistency.
 - Hidden "Drag & drop" badge and drag hint text on mobile; replaced with mobile-specific instructional tip.
 
