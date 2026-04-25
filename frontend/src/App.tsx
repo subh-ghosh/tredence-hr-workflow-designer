@@ -270,11 +270,33 @@ function getSupportedEdgeChanges(changes: EdgeChange[]): EdgeChange[] {
   )
 }
 
+type WorkspaceTabState = {
+  id: string
+  name: string
+  snapshot: GraphSnapshot
+  history: ReturnType<typeof createHistory>
+  viewport: Viewport
+  nodeCounter: number
+}
+
+function createWorkspaceTab(index: number): WorkspaceTabState {
+  return {
+    id: `ws-${index + 1}`,
+    name: `Workspace ${index + 1}`,
+    snapshot: { nodes: [], edges: [], nodeVersions: {} },
+    history: createHistory(),
+    viewport: { x: 0, y: 0, zoom: 1 },
+    nodeCounter: 0,
+  }
+}
+
 function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const nodeCounter = useRef(0)
   const latestGraphRef = useRef<GraphSnapshot>({ nodes: [], edges: [], nodeVersions: {} })
   const activeEditNodeIdRef = useRef<string | null>(null)
+  const historyRef = useRef(createHistory())
+  const viewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 })
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null)
 
   const [nodes, setNodes] = useState<Node<WorkflowData>[]>([])
@@ -293,6 +315,12 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
   const [simulationLoading, setSimulationLoading] = useState(false)
   const [importExportText, setImportExportText] = useState('')
   const [importError, setImportError] = useState('')
+  const [workspaceTabs, setWorkspaceTabs] = useState<WorkspaceTabState[]>([
+    createWorkspaceTab(0),
+    createWorkspaceTab(1),
+    createWorkspaceTab(2),
+  ])
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState('ws-1')
   const nodeTypes = useMemo(() => ({ workflow: WorkflowCardNode }), [])
 
   // Mobile state
@@ -343,6 +371,14 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
   }, [edges, nodeVersions, nodes])
 
   useEffect(() => {
+    historyRef.current = history
+  }, [history])
+
+  useEffect(() => {
+    viewportRef.current = viewport
+  }, [viewport])
+
+  useEffect(() => {
     async function loadAutomations() {
       try {
         const result = await getAutomations()
@@ -362,7 +398,101 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
     activeEditNodeIdRef.current = null
     setSelectedNodeId(null)
     setSelectedEdgeId(null)
+    setMobileEditOpen(false)
   }, [])
+
+  const persistActiveWorkspace = useCallback(
+    (tabs: WorkspaceTabState[]): WorkspaceTabState[] =>
+      tabs.map((tab) => {
+        if (tab.id !== activeWorkspaceId) return tab
+
+        return {
+          ...tab,
+          snapshot: latestGraphRef.current,
+          history: historyRef.current,
+          viewport: viewportRef.current,
+          nodeCounter: nodeCounter.current,
+        }
+      }),
+    [activeWorkspaceId],
+  )
+
+  const loadWorkspaceTab = useCallback(
+    (tab: WorkspaceTabState) => {
+      setHistory(tab.history)
+      setViewport(tab.viewport)
+      nodeCounter.current = tab.nodeCounter
+      activeEditNodeIdRef.current = null
+      latestGraphRef.current = tab.snapshot
+      setNodes(tab.snapshot.nodes)
+      setEdges(tab.snapshot.edges)
+      setNodeVersions(tab.snapshot.nodeVersions)
+      setGraphRenderKey((current) => current + 1)
+      setImportError('')
+      setSimulationErrors([])
+      setSimulationLogs([])
+      clearSelection()
+    },
+    [clearSelection],
+  )
+
+  const switchWorkspaceTab = useCallback(
+    (workspaceId: string) => {
+      if (workspaceId === activeWorkspaceId) return
+
+      const updatedTabs = persistActiveWorkspace(workspaceTabs)
+      const target = updatedTabs.find((tab) => tab.id === workspaceId)
+      if (!target) return
+
+      setWorkspaceTabs(updatedTabs)
+      setActiveWorkspaceId(workspaceId)
+      loadWorkspaceTab(target)
+    },
+    [activeWorkspaceId, loadWorkspaceTab, persistActiveWorkspace, workspaceTabs],
+  )
+
+  const addWorkspaceTab = useCallback(() => {
+    const updatedTabs = persistActiveWorkspace(workspaceTabs)
+    const nextIndex = updatedTabs.length + 1
+    const newTab: WorkspaceTabState = {
+      id: `ws-${Date.now()}`,
+      name: `Workspace ${nextIndex}`,
+      snapshot: { nodes: [], edges: [], nodeVersions: {} },
+      history: createHistory(),
+      viewport: { x: 0, y: 0, zoom: 1 },
+      nodeCounter: 0,
+    }
+
+    setWorkspaceTabs(updatedTabs.concat(newTab))
+    setActiveWorkspaceId(newTab.id)
+    loadWorkspaceTab(newTab)
+  }, [loadWorkspaceTab, persistActiveWorkspace, workspaceTabs])
+
+  const closeWorkspaceTab = useCallback(
+    (workspaceId: string) => {
+      if (workspaceTabs.length <= 1) return
+
+      const updatedTabs = persistActiveWorkspace(workspaceTabs)
+      const removeIndex = updatedTabs.findIndex((tab) => tab.id === workspaceId)
+      if (removeIndex < 0) return
+
+      const remainingTabs = updatedTabs.filter((tab) => tab.id !== workspaceId)
+
+      if (workspaceId !== activeWorkspaceId) {
+        setWorkspaceTabs(remainingTabs)
+        return
+      }
+
+      const fallbackIndex = removeIndex > 0 ? removeIndex - 1 : 0
+      const fallback = remainingTabs[fallbackIndex]
+      if (!fallback) return
+
+      setWorkspaceTabs(remainingTabs)
+      setActiveWorkspaceId(fallback.id)
+      loadWorkspaceTab(fallback)
+    },
+    [activeWorkspaceId, loadWorkspaceTab, persistActiveWorkspace, workspaceTabs],
+  )
 
   const syncSelection = useCallback(
     (nextNodes: Node<WorkflowData>[], nextEdges: Edge[]) => {
@@ -761,13 +891,13 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
     const r1y = 60
     const r2y = 280
     const sampleNodes: Node<WorkflowData>[] = [
-      { id: 's1', type: 'workflow', position: { x: 40,  y: r1y }, data: { nodeType: 'start',    startTitle: 'Tredence Onboarding: Subarta Ghosh' } },
-      { id: 's2', type: 'workflow', position: { x: 260, y: r1y }, data: { nodeType: 'task',     title: 'Submit GitHub & UI Projects', description: 'Share all project repos and prototypes', assignee: 'Subarta Ghosh', dueDate: 'Day 1' } },
+      { id: 's1', type: 'workflow', position: { x: 40, y: r1y }, data: { nodeType: 'start', startTitle: 'Tredence Onboarding: Subarta Ghosh' } },
+      { id: 's2', type: 'workflow', position: { x: 260, y: r1y }, data: { nodeType: 'task', title: 'Submit GitHub & UI Projects', description: 'Share all project repos and prototypes', assignee: 'Subarta Ghosh', dueDate: 'Day 1' } },
       { id: 's3', type: 'workflow', position: { x: 480, y: r1y }, data: { nodeType: 'approval', title: 'Technical Evaluation', approverRole: 'Tech Lead', dueDate: 'Day 2' } },
       { id: 's4', type: 'workflow', position: { x: 700, y: r1y }, data: { nodeType: 'approval', title: 'Final HR Sign-Off', approverRole: 'HR Manager', dueDate: 'Day 3' } },
       { id: 's5', type: 'workflow', position: { x: 700, y: r2y }, data: { nodeType: 'automated', title: 'Generate AI Intern Offer', description: 'AI-generated personalised offer package' } },
       { id: 's6', type: 'workflow', position: { x: 480, y: r2y }, data: { nodeType: 'automated', title: 'Send Offer Email', description: 'Auto-send official offer letter to candidate' } },
-      { id: 's7', type: 'workflow', position: { x: 260, y: r2y }, data: { nodeType: 'end',      endMessage: 'Subarta Onboarded Successfully', summaryFlag: true } },
+      { id: 's7', type: 'workflow', position: { x: 260, y: r2y }, data: { nodeType: 'end', endMessage: 'Subarta Onboarded Successfully', summaryFlag: true } },
     ]
     const sampleEdges: Edge[] = [
       { id: 'e1', source: 's1', target: 's2', type: 'smoothstep', animated: true },
@@ -946,6 +1076,44 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
             <h2>Workflow canvas</h2>
           </div>
         </div>
+        <div className="workspace-tabs" data-testid="workspace-tabs" role="tablist" aria-label="Workflow workspaces">
+          {workspaceTabs.map((tab) => {
+            const isActive = tab.id === activeWorkspaceId
+            return (
+              <div key={tab.id} className={`workspace-tab-item${isActive ? ' is-active' : ''}`}>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  className={`workspace-tab-btn${isActive ? ' is-active' : ''}`}
+                  onClick={() => switchWorkspaceTab(tab.id)}
+                >
+                  {tab.name}
+                </button>
+                {workspaceTabs.length > 1 && (
+                  <button
+                    type="button"
+                    className="workspace-tab-close"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      closeWorkspaceTab(tab.id)
+                    }}
+                    aria-label={`Close ${tab.name}`}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            )
+          })}
+          <button
+            type="button"
+            className="workspace-tab-add"
+            onClick={addWorkspaceTab}
+          >
+            + New tab
+          </button>
+        </div>
         <div className="canvas-intro">
           <div className="canvas-tip drag-hint">
             <strong>How to use it:</strong> drag steps from the left, connect them in order,
@@ -971,9 +1139,9 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
             <button type="button" className="download-btn" onClick={downloadGraphImage} disabled={nodes.length === 0}
               title="Download graph as PNG">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
               Download
             </button>
@@ -1049,8 +1217,8 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
               onClick={() => setMobileEditOpen(true)}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
               Edit step
             </button>
@@ -1537,8 +1705,8 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
             onClick={() => setActiveTab('steps')}
           >
             <svg className="mobile-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="3"/>
-              <path d="M9 9h6M9 12h6M9 15h4"/>
+              <rect x="3" y="3" width="18" height="18" rx="3" />
+              <path d="M9 9h6M9 12h6M9 15h4" />
             </svg>
             <span className="mobile-tab-label">Steps</span>
           </button>
@@ -1548,10 +1716,10 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
             onClick={() => setActiveTab('canvas')}
           >
             <svg className="mobile-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="5" cy="12" r="2"/>
-              <circle cx="19" cy="5" r="2"/>
-              <circle cx="19" cy="19" r="2"/>
-              <path d="M7 12h5m2-5-5 4m5 2-5 4"/>
+              <circle cx="5" cy="12" r="2" />
+              <circle cx="19" cy="5" r="2" />
+              <circle cx="19" cy="19" r="2" />
+              <path d="M7 12h5m2-5-5 4m5 2-5 4" />
             </svg>
             <span className="mobile-tab-label">Canvas</span>
           </button>
