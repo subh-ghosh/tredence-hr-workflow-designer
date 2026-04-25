@@ -146,6 +146,8 @@ Implemented bonus items:
 - Visual validation errors on nodes
 - Auto-layout
 - Node version history
+- Multiple workflow workspace tabs over the canvas
+- Light/Dark mode preference persistence via browser cookies
 
 ## Testing approach (incremental)
 - Build feature in small increment.

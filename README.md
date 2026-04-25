@@ -55,14 +55,15 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 - Export and import workflows as JSON
 - Reuse predefined node templates
 - Undo and redo meaningful graph edits
+- Use multiple workflow workspace tabs over the canvas for parallel flow drafting
 - Auto-layout workflow nodes
 - Show validation errors directly on affected nodes
 - Save lightweight per-node version history entries
 - Download current workflow graph as high-res PNG image
 - Load predefined interactive sample workflow with perfect topology
 - Use custom workflow card nodes with clearer visual types and friendlier onboarding copy
-- Toggle between a polished Light Mode and a high-contrast Dark Mode via a button in the header
-- Fully responsive on mobile: tab navigation (Steps / Canvas / Details) with tap-to-add buttons
+- Toggle between a polished Light Mode and a high-contrast Dark Mode via a button in the header (saved in browser cookies)
+- Fully responsive on mobile: bottom tab navigation (Steps / Canvas), tap-to-add buttons, and node-edit modal
 
 ## Workflow validation
 - Exactly one Start node is required
@@ -137,7 +138,8 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
   - Workflow validation errors shown on nodes
   - Auto-layout
   - Node version history
-  - Light/Dark mode toggle with synchronized edge, node, and panel theming
+  - Multiple workflow workspace tabs over the canvas
+  - Light/Dark mode toggle with synchronized edge, node, and panel theming, persisted via cookie
   - Mobile-responsive layout with bottom tab navigation and tap-to-add step buttons
 - Next with more time:
   - stronger end-to-end browser automation

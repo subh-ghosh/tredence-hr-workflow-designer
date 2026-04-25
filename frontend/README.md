@@ -17,6 +17,11 @@ This folder contains the React + TypeScript + Vite frontend for the HR Workflow 
 - `src/api`
   Local mock API for automation actions and workflow simulation.
 
+## Current UX highlights
+- Multiple workflow workspace tabs above the canvas
+- Light/Dark mode with browser-cookie persistence
+- Mobile-first flow with Steps/Canvas bottom tabs and node-edit modal
+
 ## Notes
 - This frontend is intended to be run from the `frontend` directory.
 - The root `README.md` contains the project-level overview and submission details.

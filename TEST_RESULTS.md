@@ -249,3 +249,47 @@ Defects found:
 Decision:
 - PASS for final UI modernization verification
 - Repository, live demo, and docs are aligned with the latest app state
+
+---
+
+## Regression Recovery Verification
+Date/Time: 2026-04-25
+
+Commands run:
+- npm run test:run (in frontend)
+- npm run build (in frontend)
+
+Results:
+- Full test suite: 34 passed, 0 failed
+- Build: pass
+- Regression fixes validated:
+  - node version history seed entries preserved for create/import/sample flows
+  - auto-layout tests aligned with current vertical layout behavior
+
+Defects found:
+- No blocking defects after regression recovery pass
+
+Decision:
+- PASS for regression recovery verification
+- Proceeded to documentation synchronization and final push
+
+---
+
+## Theme Cookie Persistence Verification
+Date/Time: 2026-04-25
+
+Commands run:
+- npm run test:run -- App.test.tsx (in frontend)
+- npm run build (in frontend)
+
+Results:
+- App tests: 2 passed, 0 failed
+- Build: pass
+- Light/Dark mode now persists via browser cookie and remains stable after page refresh
+
+Defects found:
+- No blocking defects after theme persistence change
+
+Decision:
+- PASS for theme persistence verification
+- Change committed and pushed

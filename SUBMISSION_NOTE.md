@@ -12,9 +12,10 @@ What I built:
 - Includes step editing forms, local mock API integration, validation, and a workflow test panel
 - Built incrementally with unit tests after each major step, followed by integration and final system verification
 - Includes bonus features: Export/Import JSON, node templates, Undo/Redo, auto-layout, visual node validation, and lightweight node version history
+- Includes multi-workspace graph tabs above the canvas for parallel workflow drafting
 - Includes a modernized guided UI with custom workflow cards and clearer onboarding for first-time users
-- Includes a full Light/Dark mode toggle with seamless theme switching across all panels, canvas, nodes, and inputs
-- Fully mobile-responsive: bottom tab bar navigation (Steps / Canvas / Details) and tap-to-add step buttons for touch screens
+- Includes a full Light/Dark mode toggle with seamless theme switching across all panels, canvas, nodes, and inputs, persisted with browser cookies
+- Fully mobile-responsive: bottom tab bar navigation (Steps / Canvas), tap-to-add step buttons, and a focused node-edit modal for touch screens
 
 Architecture highlights:
 - Canvas and main UI in `frontend/src/App.tsx`

@@ -197,6 +197,45 @@ Purpose: Track everything done during this case study build.
 - **Workflow Sample Auto-loader**: Added a distinct `✦ Sample` orange gradient button to instantly inject a 7-step pre-built Tredence Onboarding workflow graph in a clean, perfect 2-row "U" shape linear path without validation edge rules.
 - **Full-Graph PNG Export**: Installed `html-to-image` and appended a blue `⬇ Download` button to capture retina-scaled 2x PNG snaps of the current React Flow workflow canvas. Automatically detects active Dark/Light mode theme to shade the background.
 
+### 2026-04-25
+
+#### 20. Restore Multi-Workspace Graph Tabs
+- Reintroduced the workflow tab strip above the canvas so multiple graph workspaces can be opened in parallel.
+- Added tab switching, tab creation, and tab close behavior with per-tab graph state isolation.
+- Added matching desktop/mobile/dark-theme styles for the restored workspace tab controls.
+
+#### 21. Regression Audit + Stability Fixes
+- Ran a full audit across the latest 10 commits to validate promised features against current code.
+- Fixed a regression where initial node version history seed entries could be dropped during create/import/sample flows.
+- Updated auto-layout test expectations to match the current vertical layout behavior.
+- Re-verified with full suite and build:
+	- test: 34/34 passed
+	- build: pass
+
+#### 22. Theme Preference Persistence
+- Added browser-cookie persistence for light/dark mode.
+- On app startup, theme reads from cookie and applies immediately.
+- On toggle, cookie is updated (1-year expiry), preventing mode reset on refresh.
+
+#### 23. Documentation Synchronization Pass
+- Updated README, submission note, test records, and frontend workspace docs to reflect the latest shipped behavior.
+- Synced wording for:
+	- multi-workspace graph tabs
+	- cookie-persisted theme mode
+	- current mobile UX (Steps/Canvas tabs + node-edit modal)
+
+#### 24. Last 10 Commit Coverage (Docs Traceability)
+- `948eac4` feat(theme): persist light/dark mode via cookies
+- `44c78a3` fix(regressions): preserve version history seeds and align auto-layout tests
+- `20d150e` fix(ui): restore multiple graph tabs over canvas
+- `5138940` feat: restore validation badges, optimize PNG export for mobile/desktop, and implement vertical auto-layout
+- `e9e3847` fix(export): resolve toPng RAM crash by restricting download bounds to node viewport
+- `8c87de4` feat(ui): add premium simulation timeline, colourful chip overrides, PNG graph export, and auto-layout U-shape workflow sample
+- `27f5e85` docs: update README preview screenshots with new light/dark/mobile captures
+- `87b3d78` chore: rebrand to Tredence Analytics HR Workflow Designer across all files
+- `2ce31b8` fix(mobile): add live label, version history, and save version to node edit modal
+- `f377659` feat(mobile): node edit modal, 2-tab nav, canvas-bottom sections, bigger handles, taller canvas
+
 ## Decisions
 - Keep the implementation frontend-first with local/mock API support as requested in the case study.
 
