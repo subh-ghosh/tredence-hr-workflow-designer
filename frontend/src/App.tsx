@@ -673,20 +673,20 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
         const template = WORKFLOW_TEMPLATES.find((item) => item.id === templateId)
         if (!template) return
         const nextNode = createTemplateNode(nextId, position, template)
-        setNodeVersions((currentVersions) => ({
-          ...currentVersions,
+        const nextNodeVersions = {
+          ...current.nodeVersions,
           [nextId]: [createVersionEntry(nextNode.data, `Created from template: ${template.label}`)],
-        }))
-        commitGraph(current.nodes.concat(nextNode), current.edges)
+        }
+        commitGraph(current.nodes.concat(nextNode), current.edges, nextNodeVersions)
         return
       }
 
       const nextNode = addWorkflowNode(nextId, position, getDefaultNodeData(type))
-      setNodeVersions((currentVersions) => ({
-        ...currentVersions,
+      const nextNodeVersions = {
+        ...current.nodeVersions,
         [nextId]: [createVersionEntry(nextNode.data, 'Created step')],
-      }))
-      commitGraph(current.nodes.concat(nextNode), current.edges)
+      }
+      commitGraph(current.nodes.concat(nextNode), current.edges, nextNodeVersions)
     },
     [commitGraph, reactFlowInstance],
   )
@@ -866,12 +866,10 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
     try {
       const parsed = normalizeWorkflowGraph(parseWorkflowJson(importExportText))
       nodeCounter.current = getHighestNodeCounter(parsed.nodes)
-      setNodeVersions(
-        Object.fromEntries(
-          parsed.nodes.map((node) => [node.id, [createVersionEntry(node.data, 'Imported step')]]),
-        ),
+      const importedNodeVersions = Object.fromEntries(
+        parsed.nodes.map((node) => [node.id, [createVersionEntry(node.data, 'Imported step')]]),
       )
-      commitGraph(parsed.nodes, parsed.edges)
+      commitGraph(parsed.nodes, parsed.edges, importedNodeVersions)
       setImportError('')
     } catch (error) {
       setImportError(
@@ -911,8 +909,7 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
     sampleNodes.forEach((n) => {
       versions[n.id] = [createVersionEntry(n.data, 'Loaded from sample')]
     })
-    setNodeVersions(versions)
-    commitGraph(sampleNodes, sampleEdges)
+    commitGraph(sampleNodes, sampleEdges, versions)
     if (isMobile) setActiveTab('canvas')
   }, [commitGraph, isMobile])
 
@@ -965,11 +962,11 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
       const current = latestGraphRef.current
       const position = { x: 140 + Math.random() * 80, y: 120 + Math.random() * 80 }
       const nextNode = addWorkflowNode(nextId, position, getDefaultNodeData(type))
-      setNodeVersions((currentVersions) => ({
-        ...currentVersions,
+      const nextNodeVersions = {
+        ...current.nodeVersions,
         [nextId]: [createVersionEntry(nextNode.data, 'Created step')],
-      }))
-      commitGraph(current.nodes.concat(nextNode), current.edges)
+      }
+      commitGraph(current.nodes.concat(nextNode), current.edges, nextNodeVersions)
       if (isMobile) setActiveTab('canvas')
     },
     [commitGraph, isMobile],
@@ -983,11 +980,11 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
       const current = latestGraphRef.current
       const position = { x: 140 + Math.random() * 80, y: 120 + Math.random() * 80 }
       const nextNode = createTemplateNode(nextId, position, template)
-      setNodeVersions((currentVersions) => ({
-        ...currentVersions,
+      const nextNodeVersions = {
+        ...current.nodeVersions,
         [nextId]: [createVersionEntry(nextNode.data, `Created from template: ${template.label}`)],
-      }))
-      commitGraph(current.nodes.concat(nextNode), current.edges)
+      }
+      commitGraph(current.nodes.concat(nextNode), current.edges, nextNodeVersions)
       if (isMobile) setActiveTab('canvas')
     },
     [commitGraph, isMobile],

@@ -49,9 +49,9 @@ describe('graph utils', () => {
       layouted.nodes.map((node) => [node.id, node.position]),
     )
 
-    expect(positions.node_1).toEqual({ x: 120, y: 80 })
-    expect(positions.node_2).toEqual({ x: 360, y: 80 })
-    expect(positions.node_3).toEqual({ x: 120, y: 220 })
+    expect(positions.node_1).toEqual({ x: 350, y: 80 })
+    expect(positions.node_2).toEqual({ x: 350, y: 260 })
+    expect(positions.node_3).toEqual({ x: 350, y: 440 })
   })
 
   it('normalizes imported workflow nodes', () => {
