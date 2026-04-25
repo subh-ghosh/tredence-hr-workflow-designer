@@ -1726,8 +1726,27 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
   )
 }
 
+const THEME_COOKIE_NAME = 'thaw_theme_mode'
+
+function readThemeCookie(): boolean {
+  const cookieEntry = document.cookie
+    .split('; ')
+    .find((item) => item.startsWith(`${THEME_COOKIE_NAME}=`))
+
+  if (!cookieEntry) return false
+
+  const value = cookieEntry.split('=')[1]
+  return value === 'dark'
+}
+
+function writeThemeCookie(isDarkMode: boolean): void {
+  const themeValue = isDarkMode ? 'dark' : 'light'
+  const oneYearInSeconds = 60 * 60 * 24 * 365
+  document.cookie = `${THEME_COOKIE_NAME}=${themeValue}; max-age=${oneYearInSeconds}; path=/; samesite=lax`
+}
+
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(() => readThemeCookie())
 
   useEffect(() => {
     if (isDarkMode) {
@@ -1735,6 +1754,8 @@ function App() {
     } else {
       document.body.classList.remove('dark')
     }
+
+    writeThemeCookie(isDarkMode)
   }, [isDarkMode])
 
   return (
