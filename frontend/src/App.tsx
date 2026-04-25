@@ -11,6 +11,8 @@ import ReactFlow, {
   MiniMap,
   Position,
   ReactFlowProvider,
+  getNodesBounds,
+  getViewportForBounds,
   type Connection,
   type Edge,
   type EdgeChange,
@@ -722,17 +724,37 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
   }, [commitGraph, isMobile])
 
   const downloadGraphImage = useCallback(() => {
-    const el = reactFlowWrapper.current
-    if (!el) return
-    toPng(el, {
-      backgroundColor: isDarkMode ? '#0d1117' : '#eef4fc',
+    if (nodes.length === 0) return
+
+    // 1. Calculate the bounding box of all nodes
+    const nodesBounds = getNodesBounds(nodes)
+    const padding = 100 // 50px padding on each side
+    const captureWidth = nodesBounds.width + padding
+    const captureHeight = nodesBounds.height + padding
+
+    // 2. Get the specific transform required to fit the nodes into this dimension
+    const transform = getViewportForBounds(
+      nodesBounds,
+      captureWidth,
+      captureHeight,
+      0.5,
+      2
+    )
+
+    // 3. Select the scalable viewport layer, NOT the entire canvas wrapper,
+    // to strictly prevent massive background memory leaks in html-to-image
+    const viewportEl = document.querySelector('.react-flow__viewport') as HTMLElement
+    if (!viewportEl) return
+
+    toPng(viewportEl, {
+      backgroundColor: isDarkMode ? '#0b0f19' : '#f8fafc',
+      width: captureWidth,
+      height: captureHeight,
       pixelRatio: 2,
-      filter: (node) => {
-        // exclude controls overlay but keep everything else
-        if (node instanceof Element) {
-          if (node.classList?.contains('react-flow__panel')) return false
-        }
-        return true
+      style: {
+        width: `${captureWidth}px`,
+        height: `${captureHeight}px`,
+        transform: `translate(${transform.x + padding / 2}px, ${transform.y + padding / 2}px) scale(${transform.zoom})`,
       },
     }).then((dataUrl) => {
       const link = document.createElement('a')
@@ -742,7 +764,7 @@ function CanvasWorkspace({ isDarkMode }: { isDarkMode: boolean }) {
     }).catch((err) => {
       console.error('Download failed', err)
     })
-  }, [isDarkMode])
+  }, [isDarkMode, nodes])
 
   // Mobile: add a node at center of canvas
   const addNodeAtCenter = useCallback(
