@@ -11,19 +11,19 @@ Goal: allow an HR admin to create, edit, validate, and test simple internal work
 ## Preview
 
 ### 🖥️ Desktop — Light Mode
-![Light Mode](assets/output%20images/frontend-light.png)
+![Light Mode](assets/output%20images/Tredence%20Analytics%20%E2%80%94%20HR%20Workflow%20Designer-light-1.png)
 
 ### 🌙 Desktop — Dark Mode
-![Dark Mode](assets/output%20images/frontend-dark.png)
+![Dark Mode](assets/output%20images/Tredence%20Analytics%20%E2%80%94%20HR%20Workflow%20Designer-dark-1.png)
 
 ### 🔗 Workflow Graph
 ![Workflow Graph](assets/output%20images/graph.png)
 
 ### 📱 Mobile — Canvas Tab
-![Mobile Canvas](assets/output%20images/Screenshot_20260424_213835_Samsung%20Browser.png)
+![Mobile Canvas](assets/output%20images/Screenshot_20260425_173259_Samsung%20Browser.png)
 
 ### 📱 Mobile — Steps Tab
-![Mobile Steps](assets/output%20images/Screenshot_20260424_213844_Samsung%20Browser.png)
+![Mobile Steps](assets/output%20images/Screenshot_20260425_173312_Samsung%20Browser.png)
 
 ## Stack
 - React + TypeScript + Vite
