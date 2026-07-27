@@ -4,7 +4,7 @@ GitHub repo:
 - https://github.com/subh-ghosh/tredence-hr-workflow-designer
 
 Live demo:
-- https://tredence-hr-workflow-designer-one.vercel.app/
+- https://tredence-hr-workflow-designer.pages.dev/
 
 What I built:
 - A React + TypeScript + React Flow **Tredence Analytics HR Workflow Designer** prototype

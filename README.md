@@ -1,12 +1,14 @@
 # Tredence Analytics HR Workflow Designer — Case Study
 
+> **Note:** The original Vercel live demo link is no longer available because the account was banned. It has been successfully migrated to Cloudflare Pages. The updated live demo link is provided below.
+
 This project is a small workflow builder for HR teams.
 
 Goal: allow an HR admin to create, edit, validate, and test simple internal workflows such as onboarding, leave approval, or document verification.
 
 ## Links
 - GitHub: https://github.com/subh-ghosh/tredence-hr-workflow-designer
-- Live demo: https://tredence-hr-workflow-designer-one.vercel.app/
+- Live demo: https://tredence-hr-workflow-designer.pages.dev/
 
 ## Preview
 
